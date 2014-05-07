@@ -1,16 +1,13 @@
-h1. Hex game is based on nodejs, express, socket-io and socketio-jwt
+<h1>Hex game is based on nodejs, express, socket-io and socketio-jwt</h1>
 
-h2. How to install it in the intellij
+<h2>How to install it in the intellij</h2>
 
-<pre>install nodejs</pre>
-<p>type <b>npm install</b>will create all the dependencies</p>
+<pre>npm install</pre>
+<p>This command will create all the dependencies</p>
 
-<pre>node js plugin</pre>
-<p><b>ctrl+shift+alt+s</b> to open intellij setting.</p>
-<p>go to <b>plugin</b> and install nodejs plugin</p>
+<pre>ctrl+shift+alt+s</pre>
+<p>Open intellij setting and install nodejs plugin.</p>
 
-<pre>run it</pre>
-<p>click <b>Run</b> in the intellij</p>
-<p>click <b>edit configuration</b> to point to %project%/app.js
+<p>click <b>edit configuration</b> in the <b>Run</b> menu to point to %project%/app.js
 
 
