@@ -15,7 +15,7 @@
     "debug": "~0.7.4",
     "ejs": "~0.7.1",
     "socketio-jwt": "2.0.2",
-    "jsonwebtoken": "0.2.5",
+    "jsonwebtoken": "0.4.0",
     "socket.io": ">=0.9.16"
   }
 }

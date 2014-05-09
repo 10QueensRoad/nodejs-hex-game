@@ -2,118 +2,46 @@
 <html>
 <head>
     <title>Hex game</title>
-    <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.0.7/angular.min.js"></script>
+
+    <link href="resources/css/main.css" rel="stylesheet"/>
+
+    <script type="text/javascript" src="resources/js/lib/lodash-2.4.1.js"></script>
+    <script type="text/javascript" src="resources/js/lib/angular-1.2.16.js"></script>
+    <script type="text/javascript" src="resources/js/lib/d3-3.4.6.min.js"></script>
+
+    <script type="text/javascript" src="resources/js/mainApp.js"></script>
+    <script type="text/javascript" src="resources/js/services/commonServices.js"></script>
+    <script type="text/javascript" src="resources/js/services/d3Services.js"></script>
+    <script type="text/javascript" src="resources/js/controllers/controllers.js"></script>
+    <script type="text/javascript" src="resources/js/directives/boardDirective.js"></script>
+
     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
 
-<body ng-app="hexApp" ng-controller="hexController">
+<body ng-app="hexGame" ng-controller="HexController">
 <div ng-show="false">Please wait ...</div>
-<div ng-cloak style="display: none" ng-show="delayShow">
+<div ng-cloak ng-show="delayShow">
     <div class="form-group has-error" ng-show="showError()">
         <label class="control-label">Error: It is not your turn to make move.</label>
     </div>
-    <form id="login-red" role="form" ng-show="!playerStatus.hasRedPlayer && !side">
+    <div class="form-group" ng-show="canJoinAsPlayer('red')">
+        <button class="btn btn-success"ng-click="loginAsPlayer('red')">Join as a red player</button>
+    </div>
+    <div class="form-group" ng-show="canJoinAsPlayer('blue')">
+        <button class="btn btn-success"ng-click="loginAsPlayer('blue')">Join as a blue player</button>
+    </div>
+    <div ng-show="isPlayer()">
         <div class="form-group">
-            <button type="submit" class="btn btn-success">Join as a red player</button>
+            You are the {{side}} player
         </div>
-    </form>
-    <form id="login-blue" role="form" ng-show="!playerStatus.hasBluePlayer && !side">
         <div class="form-group">
-            <button type="submit" class="btn btn-success">Join as a blue player</button>
+            <board-directive></board-directive>
         </div>
-    </form>
-    <form id="move-form" role="form" ng-show="(playerStatus.hasRedPlayer || playerStatus.hasBluePlayer) && side">
         <div class="form-group">
-            <button id="move-action" class="btn btn-primary">Make a move</button>
+            <button id="logout-action" class="btn btn-primary" ng-click="logout()">Quit</button>
         </div>
-    </form>
-    <form id="logout-form" role="form" ng-show="(playerStatus.hasRedPlayer || playerStatus.hasBluePlayer) && side">
-        <div class="form-group">
-            <button id="logout-action" class="btn btn-primary">Quit</button>
-        </div>
-    </form>
+    </div>
     <p class="text-success" ng-bind-html-unsafe='gameActions' />
 </div>
 <script src="/socket.io/socket.io.js"></script>
-
-<script>
-    angular.module('hexApp', []).controller('hexController', function($scope) {
-        $scope.gameActions = '';
-        $scope.playerStatus = {};
-        $scope.showError = function() {
-          return $scope.hasError && $scope.errorSide == $scope.side
-        };
-        function viewer() {
-            $.ajax({
-                type: 'POST',
-                data: {},
-                url: '/viewer'
-            }).done(function (result) {
-                $scope.token = result.token;
-                connect();
-                $scope.delayShow = true;
-            });
-        }
-
-        function connect() {
-            socket = io.connect('', {
-                'force new connection': true,
-                query: $scope.token ? 'token=' + $scope.token : undefined
-            });
-
-            socket.on('moveResponse', function (response) {
-                $scope.$apply(function () {
-                    if (!response.isError) {
-                        $scope.hasError = false;
-                        $scope.gameActions = response.info;
-                    } else {
-                        $scope.hasError = true;
-                        $scope.errorSide = response.side;
-                    }
-                });
-            }).on('playerStatus', function (playerStatus) {
-                $scope.$apply(function () {
-                    $scope.playerStatus = playerStatus;
-                });
-            });
-        }
-
-        viewer(); //connect as a viewer
-
-        $('#move-action').on('click', function () {
-            socket.emit('moveRequest', $scope.token);
-        });
-
-        $('#logout-action').on('click', function () {
-            socket.emit('logout', $scope.token);
-            $scope.side = undefined;
-        });
-
-        $('#login-red').submit(function (e) {
-            e.preventDefault();
-            $.ajax({
-                type: 'POST',
-                data: {},
-                url: '/red'
-            }).done(function (result) {
-                $scope.token = result.token;
-                connect();
-                $scope.side = 'red';
-            });
-        });
-        $('#login-blue').submit(function (e) {
-            e.preventDefault();
-            $.ajax({
-                type: 'POST',
-                data: {},
-                url: '/blue'
-            }).done(function (result) {
-                $scope.token = result.token;
-                connect();
-                $scope.side = 'blue';
-            });
-        });
-    });
-</script>
 </body>
 </html>

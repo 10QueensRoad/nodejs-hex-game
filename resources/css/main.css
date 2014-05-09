@@ -1,0 +1,37 @@
+.boardDiv {
+    height: 800px;
+    width: 100%;
+}
+
+.boardCellSymbol {
+    stroke: black;
+    stroke-width: 1;
+}
+
+.boardCell {
+    fill: white;
+}
+
+.boardBorder {
+    stroke-width: 2;
+    fill:none;
+}
+
+.boardRedBorder {
+    stroke: red;
+}
+
+.boardBlueBorder {
+    stroke: blue;
+}
+
+.pawn {
+}
+
+.redPawn {
+    fill: red;
+}
+
+.bluePawn {
+    fill: blue;
+}

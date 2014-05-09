@@ -1,0 +1,15 @@
+= Client-server communications
+    - Auto-join as player
+    - push full board state to viewers that would join late (when they join or all the time?)
+
+= Game logic
+    - Store board status
+    - Determine game success
+    - Return winning path
+    - Multiple simultaneous games?
+
+= Game display
+    - Branding
+    - Background, controls
+    - Animations
+    - Sounds?

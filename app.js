@@ -7,7 +7,8 @@ var playerStatus = {};
 var blueToken;
 var redToken;
 
-var app = require('express')()
+var express = require('express')
+    , app = express()
     , server = require('http').createServer(app)
     , jwt = require('jsonwebtoken')
     , socketioJwt = require('socketio-jwt')
@@ -16,6 +17,8 @@ var app = require('express')()
 app.get('/', function (req, res) {
     res.sendfile(__dirname + '/views/index.html')
 });
+
+app.use('/resources', express.static(__dirname + "/resources"));
 
 app.post('/red', function (req, res) {
     var redSideProfile = {
@@ -40,7 +43,7 @@ app.post('/viewer', function (req, res) {
     };
 
     var viewerToken = jwt.sign(blueSideProfile, jwtSecret, { expiresInMinutes: 60*60 });
-    res.json({token: viewerToken});
+    res.json({token: viewerToken, playerStatus: playerStatus});
 });
 
 io.set('authorization', socketioJwt.authorize({
@@ -59,34 +62,35 @@ io.sockets.on('connection', function (socket) {
     } else if (side == 'red') {
         playerStatus.hasRedPlayer = true;
     }
+    io.sockets.emit('playerStatus', playerStatus);
 
-    socket.on('moveRequest', function (token) {
-        if ((!redToken || !blueToken) && token != blueToken && token != redToken) {
+    socket.on('moveRequest', function (moveRequest) {
+        if ((!redToken || !blueToken) || (moveRequest.token != blueToken && moveRequest.token != redToken)) {
             return;
         }
         if (nextTurn == side) {
             response.isError = true;
             response.side = side;
-            io.sockets.emit('moveResponse', response);
         } else {
             response.info += side + ' make a move..............' + '<br>';
             response.isError = false;
+            response.x = moveRequest.x;
+            response.y = moveRequest.y;
+            response.color = side;
             nextTurn = side;
         }
-    }).on('logout', function(token) {
-        if (token == blueToken) {
+        response.playerStatus = playerStatus;
+        io.sockets.emit('moveResponse', response);
+    }).on('logout', function(logoutRequest) {
+        if (logoutRequest.token == blueToken) {
             blueToken = undefined;
             playerStatus.hasBluePlayer = false;
-        } else if(token == redToken) {
+        } else if(logoutRequest.token == redToken) {
             redToken = undefined;
             playerStatus.hasRedPlayer = false;
         }
+        io.sockets.emit('playerStatus', playerStatus);
     });
 });
-
-setInterval(function () {
-    io.sockets.emit('playerStatus', playerStatus);
-    io.sockets.emit('moveResponse', response);
-}, 500);
 
 server.listen(3000);
