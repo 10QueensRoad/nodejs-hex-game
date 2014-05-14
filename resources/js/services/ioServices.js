@@ -2,7 +2,7 @@
 
 /**** Common angular services ****/
 
-angular.module('hexGame.commonAngularServices', [])
+angular.module('hexGame.ioAngularServices', [])
     .service('serverCommunicationService', function($http) {
         this.connectAsViewer = function(eventHandlers, successCallback, errorCallback) {
             var serverConnection = new ServerConnection();
@@ -21,21 +21,11 @@ angular.module('hexGame.commonAngularServices', [])
             }
             var thisConnection = this,
                 token = undefined,
-                socket = undefined,
-                eventHandlerDescriptors = undefined;
+                socket = undefined;
 
             this.connectToServerEventsWithListeners = function(tokenFromServer, registerEventHandlerDescriptors) {
-                eventHandlerDescriptors = registerEventHandlerDescriptors;
                 this.connectToServerEvents(tokenFromServer);
-            };
-
-            this.connectToServerEvents = function(tokenFromServer) {
-                token = tokenFromServer;
-                socket = io.connect('', {
-                    'force new connection': true,
-                    query: token ? 'token=' + token : undefined
-                });
-                _.forEach(eventHandlerDescriptors, function(eventHandlerDescriptor) {
+                _.forEach(registerEventHandlerDescriptors, function(eventHandlerDescriptor) {
                     var eventType = eventHandlerDescriptor[0];
                     var eventHandlerFunction = eventHandlerDescriptor[1];
                     socket.on(eventType, function (serverResponse) {
@@ -44,8 +34,16 @@ angular.module('hexGame.commonAngularServices', [])
                 });
             };
 
+            this.connectToServerEvents = function(tokenFromServer) {
+                token = tokenFromServer;
+                socket = io.connect('', {
+                    'force new connection': true,
+                    query: token ? 'token=' + token : undefined
+                });
+            };
+
             this.emitEvent = function(eventType, data) {
-                socket.emit(eventType, _.assign(data, {token: token}));
+                socket.emit(eventType, _.assign(data || {}, {token: token}));
             };
 
             this.loginAsPlayer = function(color, successCallback, errorCallback) {

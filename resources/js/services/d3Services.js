@@ -9,7 +9,8 @@ angular.module('hexGame.d3AngularServices', [])
         'cellWidth': 40, //Should be multiple of 2
         'cellHeight': 40, //Should be multiple of 4
         'boardLeftMargin': 10,
-        'boardTopMargin': 10
+        'boardTopMargin': 10,
+        'animations': true
     })
     /* Return the range of possible coordinates, based on the current board configuration */
     .factory('coordinatesRange', function(boardConfiguration) {

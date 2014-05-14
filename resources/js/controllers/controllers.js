@@ -3,7 +3,7 @@
 /**** Angular controllers ****/
 
 angular.module('hexGame.controllers', [])
-    .controller('HexController', function($scope, coordinatesRange, serverCommunicationService) {
+    .controller('HexController', function($scope, boardConfiguration, coordinatesRange, serverCommunicationService) {
         $scope.gameActions = '';
         $scope.side = undefined;
         $scope.hasError = false;
@@ -26,7 +26,8 @@ angular.module('hexGame.controllers', [])
                 return cells;
             }, []);
         };
-        $scope.cells = createCells();
+        var boardCells = createCells();
+        $scope.cells = [];
         $scope.pawns = [];
 
         //Server events handlers
@@ -38,11 +39,14 @@ angular.module('hexGame.controllers', [])
                     if (angular.isDefined(serverResponse.x)
                         && angular.isDefined(serverResponse.y)
                         && angular.isDefined(serverResponse.color)) {
-                            $scope.pawns.push({
-                                x: serverResponse.x,
-                                y: serverResponse.y,
-                                color: serverResponse.color
-                            });
+                        var newPawn = { x: serverResponse.x,
+                            y: serverResponse.y,
+                            color: serverResponse.color };
+                        if (_.where($scope.pawns, newPawn).length == 0) {
+                            $scope.pawns.push(newPawn);
+                        } else {
+                            console.log('Received duplicate'); //TODO to remove when proved it's fixed
+                        }
                     }
                 } else {
                     $scope.hasError = true;
@@ -87,6 +91,7 @@ angular.module('hexGame.controllers', [])
         $scope.loginAsPlayer = function(color) {
             serverConnection.loginAsPlayer(color, function() {
                 $scope.side = color;
+                $scope.cells = _.cloneDeep(boardCells);
             });
         };
 
@@ -97,7 +102,13 @@ angular.module('hexGame.controllers', [])
         };
 
         $scope.logout = function() {
-            serverConnection.emitEvent('logout', {});
-            $scope.side = undefined;
+            serverConnection.emitEvent('logout');
+            $scope.cells.length = 0;
+            $scope.pawns.length = 0;
+            _.delay(function() {
+                $scope.$apply(function() {
+                    $scope.side = undefined;
+                });
+            }, (boardConfiguration.animations ? 2000 : 0));
         };
     });
