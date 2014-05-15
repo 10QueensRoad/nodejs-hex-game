@@ -2,7 +2,7 @@
 
 <h2>How to install and run it in the intellij</h2>
 
-<pre>npm install</pre>
+<pre>$ npm install</pre>
 <p>This command will create all the dependencies</p>
 
 <pre>ctrl+shift+alt+s</pre>
@@ -10,4 +10,6 @@
 
 <p>click <b>Edit configuration</b> in the <b>Run</b> menu to point to %project%/app.js
 
-
+<h2>How to run Jasmine tests</h2>
+<pre>$ npm install</pre>
+<pre>$ node runAllSpecs.js</pre>
