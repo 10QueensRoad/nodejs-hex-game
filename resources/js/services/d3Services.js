@@ -10,11 +10,30 @@ angular.module('hexGame.d3AngularServices', [])
         'cellHeight': 40, //Should be multiple of 4
         'boardLeftMargin': 10,
         'boardTopMargin': 10,
-        'animations': true
+        'animations': true,
+        'cellSymbolId' : 'cellSymbol'
     })
-    /* Return the range of possible coordinates, based on the current board configuration */
-    .factory('coordinatesRange', function(boardConfiguration) {
-        return _.range(boardConfiguration.cellsRowWidth);
+    /* Return the static data for the game */
+    .factory('gameStaticData', function(boardConfiguration) {
+        var coordinatesRange = _.range(boardConfiguration.cellsRowWidth);
+        var boardTitle = ['B', 'O', 'M', 'B', 'O', 'R', 'A', 'T', 'E', 'C', 'H'];
+        var twoDimRange = _.flatten(
+            coordinatesRange.map(function(firstDim) {
+                return coordinatesRange.map(function (secondDim) { return [firstDim, secondDim]; });
+            }), true);
+        var boardCells = _.reduce(twoDimRange, function(cells, coordsPair) {
+            cells.push({
+                x: coordsPair[0],
+                y: coordsPair[1]
+            });
+            return cells;
+        }, []);
+
+        return {
+            'coordinatesRange': coordinatesRange,
+            'getBoardTitle': function() { return _.cloneDeep(boardTitle); },
+            'getBoardCells': function() { return _.cloneDeep(boardCells); }
+        }
     })
     /* Wrapper to the D3 singleton */
     .factory('d3Service', function($window) {
@@ -25,20 +44,34 @@ angular.module('hexGame.d3AngularServices', [])
     })
     /* Service to calculate coordinates for D3 elements */
     .service('d3CoordinatesService', function(boardConfiguration) {
+        var thisService = this;
         this.getCellXCoordinate = function(cell) {
             return boardConfiguration.boardLeftMargin +
                 (getCellXValue(cell) + getCellYValue(cell)) * boardConfiguration.cellWidth / 2;
         };
 
-        this.getCellYCoordinate = function(cell) {
+        this.getTopCoordinateOfMiddleCellRow = function() {
             return boardConfiguration.boardTopMargin +
-                getTopCoordinateOfMiddleCellRow() +
+                (boardConfiguration.cellsRowWidth - 1) * boardConfiguration.cellHeight * 0.75;
+        };
+
+        this.getCellYCoordinate = function(cell) {
+            return thisService.getTopCoordinateOfMiddleCellRow() +
                 (getCellYValue(cell) - getCellXValue(cell)) * boardConfiguration.cellHeight * 0.75;
         };
 
         this.getMiddleYCoordinateOfMiddleCellRow = function() {
-            return getTopCoordinateOfMiddleCellRow()
+            return thisService.getTopCoordinateOfMiddleCellRow()
                 + boardConfiguration.cellHeight / 2;
+        };
+
+        this.getBoardTitleLetterXCoordinate = function(d, i) {
+            return boardConfiguration.boardLeftMargin +
+                (i + 0.5) * boardConfiguration.cellWidth;
+        };
+
+        this.getBoardTitleLetterYCoordinate = function() {
+            return thisService.getTopCoordinateOfMiddleCellRow() + 0.75 * boardConfiguration.cellHeight;
         };
 
         /* Private methods */
@@ -50,13 +83,9 @@ angular.module('hexGame.d3AngularServices', [])
         var getCellYValue = function(cell) {
             return cell.y;
         };
-
-        var getTopCoordinateOfMiddleCellRow = function() {
-            return (boardConfiguration.cellsRowWidth - 1) * boardConfiguration.cellHeight * 0.75;
-        };
     })
     /* Service to build and append D3 elements */
-    .service('d3ComponentFactoryService', function(boardConfiguration, d3CoordinatesService, coordinatesRange) {
+    .service('d3ComponentFactoryService', function(boardConfiguration, gameStaticData, d3CoordinatesService) {
         this.appendCellSymbol = function(svg, cellSymbolId) {
             svg
                 .append("symbol")
@@ -95,10 +124,9 @@ angular.module('hexGame.d3AngularServices', [])
             var result = {
                 startLeftCoordinate: boardConfiguration.boardLeftMargin +
                     (xDirection == "left" ? boardConfiguration.cellsRowWidth * boardConfiguration.cellWidth : 0),
-                startTopCoordinate: boardConfiguration.boardTopMargin +
-                    d3CoordinatesService.getMiddleYCoordinateOfMiddleCellRow(),
+                startTopCoordinate: d3CoordinatesService.getMiddleYCoordinateOfMiddleCellRow(),
                 points: ''};
-            return coordinatesRange.reduce(function(result, rangeIteratorValue) {
+            return gameStaticData.coordinatesRange.reduce(function(result, rangeIteratorValue) {
                 var middlePointYCoordinate = (result.startTopCoordinate + (yDirection == "down" ? 1 : -1) *
                     boardConfiguration.cellHeight * (rangeIteratorValue == 0 ? 0.25 : 0.5));
                 var endPointXCoordinate = (result.startLeftCoordinate + (xDirection == "right" ? 1 : -1) *
@@ -113,5 +141,66 @@ angular.module('hexGame.d3AngularServices', [])
                 result.startTopCoordinate = endPointYCoordinate;
                 return result;
             }, result).points;
+        };
+    })
+    /* Service to build and append D3 elements */
+    .service('d3TransitionsService', function(boardConfiguration, d3CoordinatesService) {
+        this.fadeInAndMoveDown = function(d3Element, delayFn) {
+            if (boardConfiguration.animations) {
+                return d3Element
+                    .attr('xlink:href', '#' + boardConfiguration.cellSymbolId)
+                    .attr('x', d3CoordinatesService.getCellXCoordinate)
+                    .attr('y', 0)
+                    .attr('opacity', 0)
+                    .transition()
+                    .attr('y', d3CoordinatesService.getCellYCoordinate)
+                    .attr('opacity', 1)
+                    .duration(1000)
+                    .delay(delayFn);
+            } else {
+                return d3Element
+                    .attr('xlink:href', '#' + boardConfiguration.cellSymbolId)
+                    .attr('x', d3CoordinatesService.getCellXCoordinate)
+                    .attr('y', d3CoordinatesService.getCellYCoordinate);
+            }
+        };
+        this.fadeOutMoveUpAndRemove = function(d3Element, delayFn) {
+            if (boardConfiguration.animations) {
+                return d3Element
+                    .transition()
+                    .attr('y', 0)
+                    .attr('opacity', 0)
+                    .duration(1000)
+                    .delay(delayFn)
+                    .each("end", function () {
+                        d3.select(this).remove();
+                    });
+            } else {
+                return d3Element.remove();
+            }
+        };
+        this.fadeIn = function(d3Element,  delayFn) {
+            if (boardConfiguration.animations) {
+                return d3Element
+                    .attr('opacity', 0)
+                    .transition()
+                    .attr('opacity', 1)
+                    .duration(500)
+                    .delay(delayFn);
+            } else {
+                return d3Element;
+            }
+        };
+        this.fadeOut = function(d3Element,  delayFn) {
+            if (boardConfiguration.animations) {
+                return d3Element
+                    .attr('opacity', 1)
+                    .transition()
+                    .attr('opacity', 0)
+                    .duration(500)
+                    .delay(delayFn);
+            } else {
+                return d3Element;
+            }
         };
     });

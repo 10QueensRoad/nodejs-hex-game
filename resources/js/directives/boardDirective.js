@@ -13,14 +13,13 @@ angular.module('hexGame.directives.boardDirective', [])
      *  - d3CoordinatesService: to position the D3 elements
      * Description: Creates the main board with D3
      */
-    .directive('boardDirective', function(boardConfiguration, d3Service, d3ComponentFactoryService, d3CoordinatesService) {
+    .directive('boardDirective', function(boardConfiguration, d3Service, d3ComponentFactoryService, d3CoordinatesService, d3TransitionsService) {
         return {
             restrict: 'E',
             template: '<div class="boardDiv"></div>',
             replace: true,
             link: function(scope, element) {
                 var d3 = d3Service.d3;
-                var cellSymbolId = 'cellSymbol';
                 var svg = d3.select(element[0])
                     .append('svg')
                         .style('width', '100%')
@@ -28,27 +27,35 @@ angular.module('hexGame.directives.boardDirective', [])
                 var previousPawnsCount = 0;
 
                 //Append cell symbol, for re-use
-                d3ComponentFactoryService.appendCellSymbol(svg, cellSymbolId);
+                d3ComponentFactoryService.appendCellSymbol(svg, boardConfiguration.cellSymbolId);
 
                 //Append SVG groups
                 var cellsGroup = svg.append("g").attr("id", "cellsGroup");
                 var pawnsGroup = svg.append("g").attr("id", "pawnsGroup");
                 var bordersGroup = svg.append("g").attr("id", "bordersGroup");
+                var boardTitleGroup = svg.append("g").attr("id", "boardTitleGroup");
 
                 //Add border polylines
                 d3ComponentFactoryService.appendBorders(bordersGroup);
 
-                //Draw pawns when needed
+                //Draw pawns whenever needed
                 scope.$watchCollection('pawns', function(newValue) { //TODO: Can't d3 watch the data itself?
                     if (angular.isArray(newValue)) {
                         drawPawns();
                     }
                 });
 
-                //Draw cells when needed
+                //Draw cells whenever needed
                 scope.$watchCollection('cells', function(newValue) { //TODO: Can't d3 watch the data itself?
                     if (angular.isArray(newValue)) {
                         drawCells();
+                    }
+                });
+
+                //Draw board title whenever needed
+                scope.$watchCollection('boardTitle', function(newValue) { //TODO: Can't d3 watch the data itself?
+                    if (angular.isArray(newValue)) {
+                        drawBoardTitle();
                     }
                 });
 
@@ -62,14 +69,14 @@ angular.module('hexGame.directives.boardDirective', [])
                     var pawns = pawnsGroup.selectAll(".pawn")
                         .data(scope.pawns);
                     //Add new pawns
-                    fadeInAndMoveDown(pawns
+                    d3TransitionsService.fadeInAndMoveDown(pawns
                         .enter()
                         .append('use')
                         .attr('class', function (d) {
                             return 'pawn ' + d.color + 'Pawn';
-                        }), pawnsDelayFunction(true));
+                        }), pawnsDelayFunction(true)).ease('bounce');
                     //Remove deleted pawns
-                    fadeOutMoveUpAndRemove(pawns.exit(), pawnsDelayFunction(false));
+                    d3TransitionsService.fadeOutMoveUpAndRemove(pawns.exit(), pawnsDelayFunction(false));
                     previousPawnsCount = scope.pawns.length;
                 };
 
@@ -83,7 +90,7 @@ angular.module('hexGame.directives.boardDirective', [])
                     var boardCells = cellsGroup.selectAll(".boardCell")
                         .data(scope.cells);
                     //Add new cells
-                    fadeInAndMoveDown(boardCells.enter()
+                    d3TransitionsService.fadeInAndMoveDown(boardCells.enter()
                         .append('use')
                         .attr('class', 'boardCell')
                         .on('click', function(d) {
@@ -92,44 +99,23 @@ angular.module('hexGame.directives.boardDirective', [])
                             });
                         }), boardCellsDelayFunction(true));
                     //Remove deleted cells
-                    fadeOutMoveUpAndRemove(boardCells.exit(), boardCellsDelayFunction(false));
+                    d3TransitionsService.fadeOutMoveUpAndRemove(boardCells.exit(), boardCellsDelayFunction(false));
                 };
 
-                /* Transitions functions */
-                var fadeInAndMoveDown = function(d3Element, delayFn) {
-                    if (boardConfiguration.animations) {
-                        d3Element
-                            .attr('xlink:href', '#' + cellSymbolId)
-                            .attr('x', d3CoordinatesService.getCellXCoordinate)
-                            .attr('y', 0)
-                            .attr('opacity', 0)
-                            .transition()
-                            .attr('y', d3CoordinatesService.getCellYCoordinate)
-                            .attr('opacity', 1)
-                            .duration(1000)
-                            .delay(delayFn);
-                    } else {
-                        d3Element
-                            .attr('xlink:href', '#' + cellSymbolId)
-                            .attr('x', d3CoordinatesService.getCellXCoordinate)
-                            .attr('y', d3CoordinatesService.getCellYCoordinate);
-                    }
-                };
-                var fadeOutMoveUpAndRemove = function(d3Element, delayFn) {
-                    if (boardConfiguration.animations) {
-                        d3Element
-                            .transition()
-                            .attr('y', 0)
-                            .attr('opacity', 0)
-                            .duration(1000)
-                            .delay(delayFn)
-                            .each("end", function () {
-                                d3.select(this).remove();
-                            });
-                    } else {
-                        d3Element.remove();
-                    }
-                };
+                /* Board title drawing function */
+                var drawBoardTitle = function() {
+                    var boardTitleLetters = boardTitleGroup.selectAll(".boardTitle")
+                        .data(scope.boardTitle);
+                    //Add new cells
+                    d3TransitionsService.fadeIn(boardTitleLetters.enter()
+                        .append('text')
+                        .attr('x', d3CoordinatesService.getBoardTitleLetterXCoordinate)
+                        .attr('y', d3CoordinatesService.getBoardTitleLetterYCoordinate())
+                        .attr('class', 'boardTitle'), function() { return 2000; })
+                        .text( function (d) { return d; } );
+                    //Remove deleted cells
+                    d3TransitionsService.fadeOut(boardTitleLetters.exit(), function() { return 2000; });
+                }
             }
         }
     });

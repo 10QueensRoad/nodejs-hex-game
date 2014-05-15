@@ -3,32 +3,16 @@
 /**** Angular controllers ****/
 
 angular.module('hexGame.controllers', [])
-    .controller('HexController', function($scope, boardConfiguration, coordinatesRange, serverCommunicationService) {
+    .controller('HexController', function($scope, boardConfiguration, gameStaticData, serverCommunicationService) {
         $scope.gameActions = '';
         $scope.side = undefined;
         $scope.hasError = false;
         var playerStatus = {};
         var errorSide = undefined;
         var serverConnection = undefined;
-
-        //Create game board
-        var createCells = function() {
-            var twoDimRange = _.flatten(
-                coordinatesRange.map(function(firstDim) {
-                    return coordinatesRange.map(function (secondDim) { return [firstDim, secondDim]; });
-                }), true);
-
-            return _.reduce(twoDimRange, function(cells, coordsPair) {
-                cells.push({
-                    x: coordsPair[0],
-                    y: coordsPair[1]
-                });
-                return cells;
-            }, []);
-        };
-        var boardCells = createCells();
         $scope.cells = [];
         $scope.pawns = [];
+        $scope.boardTitle = [];
 
         //Server events handlers
         var handleMoveResponse = function(serverResponse) {
@@ -91,7 +75,8 @@ angular.module('hexGame.controllers', [])
         $scope.loginAsPlayer = function(color) {
             serverConnection.loginAsPlayer(color, function() {
                 $scope.side = color;
-                $scope.cells = _.cloneDeep(boardCells);
+                $scope.cells = gameStaticData.getBoardCells();
+                $scope.boardTitle = gameStaticData.getBoardTitle();
             });
         };
 
@@ -104,11 +89,12 @@ angular.module('hexGame.controllers', [])
         $scope.logout = function() {
             serverConnection.emitEvent('logout');
             $scope.cells.length = 0;
+            $scope.boardTitle.length = 0;
             $scope.pawns.length = 0;
             _.delay(function() {
                 $scope.$apply(function() {
                     $scope.side = undefined;
                 });
-            }, (boardConfiguration.animations ? 2000 : 0));
+            }, (boardConfiguration.animations ? 2750 : 0));
         };
     });

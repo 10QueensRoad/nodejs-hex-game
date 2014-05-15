@@ -1,3 +1,26 @@
+@font-face {
+    font-family: "AlrightSansRegular";
+    font-style: normal;
+    font-weight: 400;
+    src: url("../fonts/alrightsans-regular-v3-webfont.eot?#iefix") format("embedded-opentype"), url("../fonts/alrightsans-regular-v3-webfont.woff") format("woff"), url("../fonts/alrightsans-regular-v3-webfont.ttf") format("truetype"), url("../fonts/alrightsans-regular-v3-webfont.svg#alright_sansregular") format("svg");
+}
+@font-face {
+    font-family: "AlrightSansMedium";
+    font-style: normal;
+    font-weight: 400;
+    src: url("../fonts/alrightsans-medium-v3-webfont.eot?#iefix") format("embedded-opentype"), url("../fonts/alrightsans-medium-v3-webfont.woff") format("woff"), url("../fonts/alrightsans-medium-v3-webfont.ttf") format("truetype"), url("../fonts/alrightsans-medium-v3-webfont.svg#alright_sansmedium") format("svg");
+}
+@media not all {
+    @font-face {
+        font-family: "AlrightSansRegular";
+        src: url("../fonts/alrightsans-regular-v3.svg") format("svg");
+    }
+    @font-face {
+        font-family: "AlrightSansMedium";
+        src: url("../fonts/alrightsans-medium-v3.svg") format("svg");
+    }
+}
+
 .boardDiv {
     height: 800px;
     width: 100%;
@@ -34,4 +57,12 @@
 
 .bluePawn {
     fill: blue;
+}
+
+.boardTitle {
+    font-family: AlrightSansMedium,"Helvetica Neue",Helvetica,Arial,sans-serif;
+    font-size: 28px;
+    fill: black;
+    pointer-events: none;
+    text-anchor: middle;
 }
