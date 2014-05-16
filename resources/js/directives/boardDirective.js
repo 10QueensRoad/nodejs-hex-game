@@ -62,7 +62,8 @@ angular.module('hexGame.directives.boardDirective', [])
                 /* Pawns drawing functions */
                 var pawnsDelayFunction = function(wayIn) {
                     return function(d, i) {
-                        return (wayIn ? (i - previousPawnsCount) : (scope.pawns.length - previousPawnsCount)) * 50;
+                        return (wayIn ? (i - previousPawnsCount) : (scope.pawns.length - previousPawnsCount))
+                                * boardConfiguration.animations.singleElementDelay;
                     }
                 };
                 var drawPawns = function() {
@@ -74,16 +75,23 @@ angular.module('hexGame.directives.boardDirective', [])
                         .append('use')
                         .attr('class', function (d) {
                             return 'pawn ' + d.color + 'Pawn';
-                        }), pawnsDelayFunction(true)).ease('bounce');
+                        }),
+                        boardConfiguration.animations.pawns,
+                        pawnsDelayFunction(true)).ease('bounce');
                     //Remove deleted pawns
-                    d3TransitionsService.fadeOutMoveUpAndRemove(pawns.exit(), pawnsDelayFunction(false));
+                    d3TransitionsService.fadeOutMoveUpAndRemove(pawns.exit(),
+                        boardConfiguration.animations.pawns,
+                        pawnsDelayFunction(false));
                     previousPawnsCount = scope.pawns.length;
                 };
 
                 /* Cells drawing functions */
                 var boardCellsDelayFunction = function(wayIn) {
                     return function(d) {
-                        return (wayIn ? (d.x + d.y) : (boardConfiguration.cellsRowWidth * 2 - (d.x + d.y))) * 50;
+                        return (wayIn ? (d3CoordinatesService.getCellXValue(d) + d3CoordinatesService.getCellYValue(d))
+                                    : (boardConfiguration.cellsRowWidth * 2
+                                        - (d3CoordinatesService.getCellXValue(d) + d3CoordinatesService.getCellYValue(d))))
+                                * boardConfiguration.animations.singleElementDelay;
                     };
                 };
                 var drawCells = function() {
@@ -95,11 +103,18 @@ angular.module('hexGame.directives.boardDirective', [])
                         .attr('class', 'boardCell')
                         .on('click', function(d) {
                             scope.$apply(function () {
-                                scope.handleBoardClick(d.x, d.y);
+                                scope.handleBoardClick(d3CoordinatesService.getCellXValue(d),
+                                    d3CoordinatesService.getCellYValue(d));
                             });
-                        }), boardCellsDelayFunction(true));
+                        }),
+                        boardConfiguration.animations.boardCells,
+                        false,
+                        boardCellsDelayFunction(true));
                     //Remove deleted cells
-                    d3TransitionsService.fadeOutMoveUpAndRemove(boardCells.exit(), boardCellsDelayFunction(false));
+                    d3TransitionsService.fadeOutMoveUpAndRemove(boardCells.exit(),
+                        boardConfiguration.animations.boardCells,
+                        false,
+                        boardCellsDelayFunction(false));
                 };
 
                 /* Board title drawing function */
@@ -111,10 +126,14 @@ angular.module('hexGame.directives.boardDirective', [])
                         .append('text')
                         .attr('x', d3CoordinatesService.getBoardTitleLetterXCoordinate)
                         .attr('y', d3CoordinatesService.getBoardTitleLetterYCoordinate())
-                        .attr('class', 'boardTitle'), function() { return 2000; })
-                        .text( function (d) { return d; } );
+                        .attr('class', 'boardTitle'),
+                        boardConfiguration.animations.boardTitle,
+                        function() { return d3TransitionsService.boardCellsAnimationTotalDuration(); })
+                        .text( function (d) { return d; });
                     //Remove deleted cells
-                    d3TransitionsService.fadeOut(boardTitleLetters.exit(), function() { return 2000; });
+                    d3TransitionsService.fadeOut(boardTitleLetters.exit(),
+                        boardConfiguration.animations.boardTitle,
+                        function() { return d3TransitionsService.boardCellsAnimationTotalDuration(); });
                 }
             }
         }

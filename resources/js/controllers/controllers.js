@@ -3,7 +3,7 @@
 /**** Angular controllers ****/
 
 angular.module('hexGame.controllers', [])
-    .controller('HexController', function($scope, boardConfiguration, gameStaticData, serverCommunicationService) {
+    .controller('HexController', function($scope, boardConfiguration, gameStaticData, serverCommunicationService, d3TransitionsService) {
         $scope.gameActions = '';
         $scope.side = undefined;
         $scope.hasError = false;
@@ -75,8 +75,8 @@ angular.module('hexGame.controllers', [])
         $scope.loginAsPlayer = function(color) {
             serverConnection.loginAsPlayer(color, function() {
                 $scope.side = color;
-                $scope.cells = gameStaticData.getBoardCells();
-                $scope.boardTitle = gameStaticData.getBoardTitle();
+                $scope.cells.push.apply($scope.cells, gameStaticData.boardCells);
+                $scope.boardTitle.push.apply($scope.boardTitle, gameStaticData.boardTitle);
             });
         };
 
@@ -95,6 +95,8 @@ angular.module('hexGame.controllers', [])
                 $scope.$apply(function() {
                     $scope.side = undefined;
                 });
-            }, (boardConfiguration.animations ? 2750 : 0));
+            }, (boardConfiguration.animations.boardTitle ? 1 : 0) * boardConfiguration.animations.shortDuration
+                + (boardConfiguration.animations.boardCells ? 1 : 0) * d3TransitionsService.boardCellsAnimationTotalDuration()
+                + boardConfiguration.animations.singleElementDelay);
         };
     });
