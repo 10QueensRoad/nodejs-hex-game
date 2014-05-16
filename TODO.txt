@@ -13,3 +13,8 @@
     - Background, controls
     - Animations
     - Sounds?
+
+= Notes for winning move calculation
+    - The game will never tie. You can only lose if your opponent has won, it is not possible to deadlock.
+    - Other HexGame implementations highlight the entire path. If the winning path forks and joins, it is still part of the winning path, so highlight it all.
+    - The winning move must involve the most recent move. So use that as a starting point for path-finding.
