@@ -1,4 +1,4 @@
-var game = require('../resources/js/game');
+var game = require(__dirname + '/../../main/server/js/game');
 var PlayerTurn = game.PlayerTurn;
 var Gameplay = game.Gameplay;
 var HexGame = game.HexGame;

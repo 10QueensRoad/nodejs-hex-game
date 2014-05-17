@@ -15,10 +15,10 @@ var express = require('express')
     , io = require('socket.io').listen(server, { log: false });
 
 app.get('/', function (req, res) {
-    res.sendfile(__dirname + '/views/index.html')
+    res.sendfile(__dirname + '/client/views/index.html')
 });
 
-app.use('/resources', express.static(__dirname + "/resources"));
+app.use('/resources', express.static(__dirname + "/client/resources"));
 
 app.post('/red', function (req, res) {
     var redSideProfile = {

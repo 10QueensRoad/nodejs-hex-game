@@ -6,7 +6,7 @@
 
 var jasmine = require('jasmine-node');
 var sys = require('sys');
-_ = require('./resources/js/lib/lodash-2.4.1');
+_ = require('./main/client/resources/js/lib/lodash-2.4.1');
 
 for(var key in jasmine) {
     global[key] = jasmine[key];
