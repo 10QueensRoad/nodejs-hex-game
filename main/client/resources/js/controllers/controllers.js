@@ -20,17 +20,10 @@ angular.module('hexGame.controllers', [])
                 if (!serverResponse.isError) {
                     $scope.hasError = false;
                     $scope.gameActions = serverResponse.info;
-                    if (angular.isDefined(serverResponse.x)
-                        && angular.isDefined(serverResponse.y)
-                        && angular.isDefined(serverResponse.color)) {
-                        var newPawn = { x: serverResponse.x,
-                            y: serverResponse.y,
-                            color: serverResponse.color };
-                        if (_.where($scope.pawns, newPawn).length == 0) {
-                            $scope.pawns.push(newPawn);
-                        } else {
-                            console.log('Received duplicate'); //TODO to remove when proved it's fixed
-                        }
+                    if (angular.isDefined(serverResponse.move)) {
+                        var newPawn = serverResponse.move;
+                        console.log('CurrentStatus is',JSON.stringify(serverResponse.currentStatus));
+                        $scope.pawns.push(newPawn);
                     }
                 } else {
                     $scope.hasError = true;

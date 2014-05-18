@@ -1,18 +1,20 @@
 var jwtSecret = 'hex game secret private key';
-var nextTurn = 'blue';
-var response = {
-    info: ''
-};
+var response = {};
 var playerStatus = {};
 var blueToken;
 var redToken;
+
+_ = require('./client/resources/js/lib/lodash-2.4.1');
 
 var express = require('express')
     , app = express()
     , server = require('http').createServer(app)
     , jwt = require('jsonwebtoken')
+    , game = require('./server/js/game')
     , socketioJwt = require('socketio-jwt')
     , io = require('socket.io').listen(server, { log: false });
+
+var hexGame = new game.HexGame();
 
 app.get('/', function (req, res) {
     res.sendfile(__dirname + '/client/views/index.html')
@@ -26,6 +28,9 @@ app.post('/red', function (req, res) {
     };
     redToken = jwt.sign(redSideProfile, jwtSecret, { expiresInMinutes: 60*5 });
     res.json({token: redToken});
+    if (blueToken) {
+        hexGame.start();
+    }
 });
 
 app.post('/blue', function (req, res) {
@@ -35,6 +40,9 @@ app.post('/blue', function (req, res) {
 
     blueToken = jwt.sign(blueSideProfile, jwtSecret, { expiresInMinutes: 60*5 });
     res.json({token: blueToken});
+    if (redToken) {
+        hexGame.start();
+    }
 });
 
 app.post('/viewer', function (req, res) {
@@ -68,19 +76,21 @@ io.sockets.on('connection', function (socket) {
         if ((!redToken || !blueToken) || (moveRequest.token != blueToken && moveRequest.token != redToken)) {
             return;
         }
-        if (nextTurn == side) {
-            response.isError = true;
-            response.side = side;
-        } else {
-            response.info += side + ' make a move..............' + '<br>';
+        var gameStatus;
+        try {
+            gameStatus = hexGame.move(new game.Move(moveRequest.x, moveRequest.y, side));
             response.isError = false;
-            response.x = moveRequest.x;
-            response.y = moveRequest.y;
-            response.color = side;
-            nextTurn = side;
+        } catch (exception) {
+            console.log('!! ' + exception);
+            // Compatibility with existing implementation. May need to be revised.
+            gameStatus = hexGame.gameStatus();
+            response.isError = true;
         }
+
+        // This should be returned as a gameStatus. Let's work out how to combine
+        // the gameStatus and playerStatus in a meaningful way, if we need to return both at once.
         response.playerStatus = playerStatus;
-        io.sockets.emit('moveResponse', response);
+        io.sockets.emit('moveResponse', _.extend({}, response, gameStatus));
     }).on('logout', function(logoutRequest) {
         if (logoutRequest.token == blueToken) {
             blueToken = undefined;

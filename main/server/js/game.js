@@ -2,7 +2,10 @@ exports.PlayerTurn = PlayerTurn;
 exports.Gameplay = Gameplay;
 exports.HexGame = HexGame;
 exports.Move = Move;
+exports.GameBoard = GameBoard;
 exports.GameStatus = GameStatus;
+
+DEFAULT_GAME_BOARD_SIZE = 11;
 
 function PlayerTurn() {
     var players = ['red', 'blue'];
@@ -16,6 +19,63 @@ function PlayerTurn() {
         currentPlayerIndex = (currentPlayerIndex + 1) % 2
         return this.current();
     };
+}
+
+function GameBoard(size) {
+    var pawns = [];
+    var lastMove;
+
+    _.times(size, function() {
+        pawns.push([]);
+    });
+
+    function assertCellExists(moveRequest) {
+        if (moveRequest.x < 0
+            || moveRequest.y < 0
+            || moveRequest.x > size - 1
+            || moveRequest.y > size - 1) {
+            throw 'move is out of bounds';
+        }
+    }
+
+    function assertCellIsOpen(moveRequest) {
+        if (pawns[moveRequest.x][moveRequest.y]) {
+            throw 'duplicate move';
+        }
+    }
+
+    function pawnAt(x, y) {
+        if (pawns[x] && pawns[x][y]) {
+            return pawns[x][y];
+        }
+    }
+
+    this.neighboursOf = function(pawn) {
+        var potentialNeighbours = [
+            pawnAt(pawn.x, pawn.y + 1),
+            pawnAt(pawn.x, pawn.y - 1),
+            pawnAt(pawn.x + 1, pawn.y),
+            pawnAt(pawn.x - 1, pawn.y),
+            pawnAt(pawn.x + 1, pawn.y + 1),
+            pawnAt(pawn.x - 1, pawn.y - 1)
+        ];
+
+        return _.filter(potentialNeighbours, function(potentialNeighbour) {
+            return potentialNeighbour
+                && potentialNeighbour.color === pawn.color;
+        });
+    };
+
+    this.addMove = function(moveRequest) {
+        assertCellExists(moveRequest);
+        assertCellIsOpen(moveRequest);
+        pawns[moveRequest.x][moveRequest.y] = moveRequest;
+        lastMove = moveRequest;
+    };
+
+    this.lastMove = function() {
+        return lastMove;
+    }
 }
 
 function Gameplay() {
@@ -65,17 +125,84 @@ function Gameplay() {
     };
 }
 
-function HexGame() {
+function HexGame(gameBoardSize) {
+
+    gameBoardSize = gameBoardSize || DEFAULT_GAME_BOARD_SIZE;
     var gameplay = new Gameplay();
-    var cells = [];
+    var gameBoard = new GameBoard(gameBoardSize);
+
+    var CONNECTION = {
+        NO_CONNECTION: {
+            updateConnection: function(move) {
+                // There's no connection, nothing to update!
+            }
+        },
+        A: {
+            updateConnection: function(move) {
+                if (move.connectedTo === CONNECTION.NO_CONNECTION) {
+                    move.connectedTo = CONNECTION.A;
+                    updateConnections(move);
+                } else if (move.connectedTo === CONNECTION.B) {
+                    move.connectedTo = CONNECTION.BOTH;
+                    updateConnections(move);
+                }
+            }
+        },
+        B: {
+            updateConnection: function(move) {
+                if (move.connectedTo === CONNECTION.NO_CONNECTION) {
+                    move.connectedTo = CONNECTION.B;
+                    updateConnections(move);
+                } else if (move.connectedTo === CONNECTION.A) {
+                    move.connectedTo = CONNECTION.BOTH;
+                    updateConnections(move);
+                }
+            }
+        },
+        BOTH: {
+            updateConnection: function(move) {
+                if (move.connectedTo !== CONNECTION.BOTH) {
+                    move.connectedTo = CONNECTION.BOTH;
+                    updateConnections(move);
+                }
+            }
+        }
+    };
 
     function isCorrectPlayersTurn(moveRequest) {
         return gameplay.currentPlayer() == moveRequest.color;
     }
 
-    function isCellOpen(moveRequest) {
-        return !_.find(cells, function(cell) {
-            return cell.x === moveRequest.x && cell.y === moveRequest.y;
+    // This should be refactored soon.
+    function updatePaths(move) {
+        move.connectedTo = CONNECTION.NO_CONNECTION;
+        // Step 1: Mark move as being connectedTo if it is along a wall.
+        // "red" has the north-south wall. They want to make contact with x=0 or x=max
+        // "blue" has the east-west wall. They want to make contact with y=0 or y=max.
+        if (move.color === 'red') {
+            if (move.x === 0) {
+                move.connectedTo = CONNECTION.A;
+            } else if (move.x === gameBoardSize - 1) {
+                move.connectedTo = CONNECTION.B;
+            }
+        } else if (move.color === 'blue') {
+            if (move.y === 0) {
+                move.connectedTo = CONNECTION.A;
+            } else if (move.y === gameBoardSize - 1) {
+                move.connectedTo = CONNECTION.B;
+            }
+        }
+        updateConnections(move);
+    }
+
+    function updateConnections(move) {
+        var neighbours = gameBoard.neighboursOf(move);
+        _.each(neighbours, function(neighbour) {
+            // The less well connected node should take the same value as the more well-connected
+            // node, then we should call updateConnections for the updated node. If both nodes are
+            // equally well-connected, don't bother.
+            move.connectedTo.updateConnection(neighbour);
+            neighbour.connectedTo.updateConnection(move);
         });
     }
 
@@ -84,15 +211,23 @@ function HexGame() {
     };
 
     this.move = function(moveRequest) {
-        if (isCorrectPlayersTurn(moveRequest) && isCellOpen(moveRequest)) {
-            cells.push(moveRequest);
-            gameplay.nextPlayer();
+        // This is currently the only "condition" that will silently fail the move instead
+        // of throwing an exception. Maybe we should make it throw an exception, too.
+        if (isCorrectPlayersTurn(moveRequest)) {
+            gameBoard.addMove(moveRequest);
+            // This should possibly refactored to a class that deals with updating paths.
+            updatePaths(gameBoard.lastMove());
+            if (gameBoard.lastMove().connectedTo === CONNECTION.BOTH) {
+                gameplay.won();
+            } else {
+                gameplay.nextPlayer();
+            }
         }
         return this.gameStatus();
     };
 
     this.gameStatus = function() {
-        return new GameStatus(gameplay.currentStatus(), _.last(cells));
+        return new GameStatus(gameplay.currentStatus(), gameBoard.lastMove());
     };
 }
 
@@ -102,19 +237,8 @@ function Move(x, y, color) {
     this.color = color;
 }
 
-function GameStatus(currentStatus, move) {
+function GameStatus(currentStatus, move, winningPath) {
     this.currentStatus = currentStatus;
     this.move = move;
+    this.winningPath = winningPath;
 }
-
-// Ensure Move constructor properly populates the object.
-// Ensure PlayerTurn repeatedly returns "red" for current player.
-// Ensure PlayerTurn returns "blue" for next player, then for current player.
-// Ensure PlayerTurn returns "red" for next next player, then for current player.
-// Ensure HexGame returns Move with the same data when called with a "red" move.
-// Ensure HexGame returns false when called with a "blue" move.
-// Ensure HexGame returns false when called with a "red", then "red" move.
-// Ensure HexGame returns Move when called with a "blue" move, then a "red" move.
-// Ensure HexGame returns Move with the same data when called with a "red", then "blue" move.
-
-
