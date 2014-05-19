@@ -51,6 +51,7 @@ app.post('/viewer', function (req, res) {
     };
 
     var viewerToken = jwt.sign(viewerProfile, jwtSecret, { expiresInMinutes: 60 });
+    // TODO: Return full game status
     res.json({token: viewerToken, fullStatus: hexGame.fullStatus()});
 });
 
@@ -63,6 +64,7 @@ io.sockets.on('connection', function (socket) {
     var side = socket.handshake.decoded_token.side;
     var currentToken = socket.handshake.query.token;
     console.log("notification: --------------------------- " + side, 'connected');
+    // TODO: see if we can use a session, to be refresh-resistant. Also, don't include token in the URL (client-side)
     if (side !== 'blue' && side !== 'red') {
         return;
     }
@@ -84,7 +86,7 @@ io.sockets.on('connection', function (socket) {
         }
         var gameStatus;
         try {
-            gameStatus = hexGame.move(new game.Move(moveRequest.x, moveRequest.y, side));
+            gameStatus = hexGame.placePawn(new game.Pawn(moveRequest.x, moveRequest.y, side));
             response.isError = false;
         } catch (exception) {
             console.log('!! ' + exception);
@@ -92,6 +94,7 @@ io.sockets.on('connection', function (socket) {
             gameStatus = hexGame.gameStatus();
             response.isError = true;
         }
+        // TODO: Ensure response.errorSide is loaded with the colour of the player that generated the error.
 
         io.sockets.emit('gameStatus', gameStatus);
     }).on('logout', function(logoutRequest) {

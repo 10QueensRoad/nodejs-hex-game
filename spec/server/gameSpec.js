@@ -2,7 +2,7 @@ var game = require(__dirname + '/../../main/server/js/game');
 var PlayerTurn = game.PlayerTurn;
 var Gameplay = game.Gameplay;
 var HexGame = game.HexGame;
-var Move = game.Move;
+var Pawn = game.Pawn;
 var GameBoard = game.GameBoard;
 var GameStatus = game.GameStatus;
 
@@ -132,17 +132,17 @@ describe('A newly created HexGame', function() {
 
     it('should return a waitingForPlayers gameStatus with no last move', function() {
         expect(hexGame.gameStatus().currentStatus).toBe('waitingForPlayers');
-        expect(hexGame.gameStatus().move).toBeUndefined();
+        expect(hexGame.gameStatus().pawn).toBeUndefined();
     });
     it('should throw an exception when making a move', function() {
-        expect(hexGame.move).toThrow('invalid action when waitingForPlayers');
+        expect(hexGame.placePawn).toThrow('invalid action when waitingForPlayers');
     });
 });
 
 describe('A HexGame that has been started', function() {
     var hexGame;
-    var redMove = new Move(3, 6, 'red');
-    var blueMove = new Move(3, 7, 'blue');
+    var redPawn = new Pawn(3, 6, 'red');
+    var bluePawn = new Pawn(3, 7, 'blue');
 
     beforeEach(function() {
         hexGame = new HexGame();
@@ -152,85 +152,85 @@ describe('A HexGame that has been started', function() {
     it('should throw an exception when starting again', function() {
         expect(hexGame.start).toThrow('invalid action when redTurn');
     });
-    it('should return a redTurn gameStatus with no last move', function() {
+    it('should return a redTurn gameStatus with no last pawn', function() {
         expect(hexGame.gameStatus().currentStatus).toBe('redTurn');
-        expect(hexGame.gameStatus().move).toBeUndefined();
+        expect(hexGame.gameStatus().pawn).toBeUndefined();
     });
-    it('should accept a move by red, confirming the move and swapping to blue turn', function() {
-        var gameStatus = hexGame.move(redMove);
+    it('should accept a move by red, confirming the pawn and swapping to blue turn', function() {
+        var gameStatus = hexGame.placePawn(redPawn);
         expect(gameStatus.currentStatus).toBe('blueTurn');
-        expect(gameStatus.move).toBe(redMove);
+        expect(gameStatus.pawn).toBe(redPawn);
     });
-    it('should ignore a move by blue, returning a redTurn gameStatus with no last move', function() {
-        var gameStatus = hexGame.move(blueMove);
+    it('should ignore a move by blue, returning a redTurn gameStatus with no last pawn', function() {
+        var gameStatus = hexGame.placePawn(bluePawn);
         expect(gameStatus.currentStatus).toBe('redTurn');
-        expect(gameStatus.move).toBeUndefined();
+        expect(gameStatus.pawn).toBeUndefined();
     });
 });
 
-describe('A HexGame that has been started, after red placing a move', function() {
+describe('A HexGame that has been started, after red placing a pawn', function() {
     var hexGame;
-    var redMove = new Move(3, 6, 'red');
-    var blueCorrectMove = new Move(3, 7, 'blue');
-    var blueIncorrectMove = new Move(3, 6, 'blue');
+    var redPawn = new Pawn(3, 6, 'red');
+    var correctBluePawn = new Pawn(3, 7, 'blue');
+    var incorrectBluePawn = new Pawn(3, 6, 'blue');
 
     beforeEach(function() {
         hexGame = new HexGame();
         hexGame.start();
-        hexGame.move(redMove);
+        hexGame.placePawn(redPawn);
     });
 
-    it('should return a blueTurn gameStatus with the last move by red', function() {
+    it('should return a blueTurn gameStatus with the last pawn by red', function() {
         expect(hexGame.gameStatus().currentStatus).toBe('blueTurn');
-        expect(hexGame.gameStatus().move).toBe(redMove);
+        expect(hexGame.gameStatus().pawn).toBe(redPawn);
     });
-    it('should accept a correct move by blue, confirming the move and swapping to red turn', function() {
-        var gameStatus = hexGame.move(blueCorrectMove);
+    it('should accept a correct move by blue, confirming the pawn and swapping to red turn', function() {
+        var gameStatus = hexGame.placePawn(correctBluePawn);
         expect(gameStatus.currentStatus).toBe('redTurn');
-        expect(gameStatus.move).toBe(blueCorrectMove);
+        expect(gameStatus.pawn).toBe(correctBluePawn);
     });
     it('should throw an exception when blue attempts to duplicate the move', function() {
         expect(function() {
-            hexGame.move(blueIncorrectMove);
+            hexGame.placePawn(incorrectBluePawn);
         }).toThrow('duplicate move');
     });
-    it('should ignore a move by red, returning a blueTurn gameStatus and last move by red', function() {
-        var gameStatus = hexGame.move(redMove);
+    it('should ignore a move by red, returning a blueTurn gameStatus and last pawn placed by red', function() {
+        var gameStatus = hexGame.placePawn(redPawn);
         expect(gameStatus.currentStatus).toBe('blueTurn');
-        expect(gameStatus.move).toBe(redMove);
+        expect(gameStatus.pawn).toBe(redPawn);
     });
 });
 
-describe('A HexGame that has been started, after red placing a move', function() {
+describe('A HexGame that has been started, after red placing a pawn', function() {
     var hexGame;
-    var redMove = new Move(3, 6, 'red');
-    var blueCorrectMove = new Move(3, 7, 'blue');
-    var blueIncorrectMove = new Move(3, 6, 'blue');
+    var redPawn = new Pawn(3, 6, 'red');
+    var correctBluePawn = new Pawn(3, 7, 'blue');
+    var incorrectBluePawn = new Pawn(3, 6, 'blue');
 
     beforeEach(function() {
         hexGame = new HexGame();
         hexGame.start();
-        hexGame.move(redMove);
+        hexGame.placePawn(redPawn);
     });
 
-    it('should return a blueTurn gameStatus with the last move by red', function() {
+    it('should return a blueTurn gameStatus with the last pawn by red', function() {
         expect(hexGame.gameStatus().currentStatus).toBe('blueTurn');
-        expect(hexGame.gameStatus().move).toBe(redMove);
+        expect(hexGame.gameStatus().pawn).toBe(redPawn);
     });
-    it('should accept a correct move by blue, confirming the move and swapping to red turn', function() {
-        var gameStatus = hexGame.move(blueCorrectMove);
+    it('should accept a correct move by blue, confirming the pawn and swapping to red turn', function() {
+        var gameStatus = hexGame.placePawn(correctBluePawn);
         expect(gameStatus.currentStatus).toBe('redTurn');
-        expect(gameStatus.move).toBe(blueCorrectMove);
+        expect(gameStatus.pawn).toBe(correctBluePawn);
     });
     it('should throw an exception when blue attempts to duplicate the move', function() {
         expect(function() {
-            hexGame.move(blueIncorrectMove);
+            hexGame.placePawn(incorrectBluePawn);
         }).toThrow('duplicate move');
     });
-    it('should ignore a move by red, returning a blueTurn gameStatus and last move by red', function() {
-        var gameStatus = hexGame.move(redMove);
+    it('should ignore a move by red, returning a blueTurn gameStatus and last pawn by red', function() {
+        var gameStatus = hexGame.placePawn(redPawn);
         expect(gameStatus.currentStatus).toBe('blueTurn');
-        expect(gameStatus.move).toBe(redMove);
+        expect(gameStatus.pawn).toBe(redPawn);
     });
 });
 
@@ -253,33 +253,33 @@ describe('A newly created Gameplay', function() {
 });
 
 
-describe('A newly constructed Move', function() {
-    var move;
+describe('A newly constructed Pawn', function() {
+    var pawn;
 
     beforeEach(function() {
-        move = new Move(5, 8, 'purple');
+        pawn = new Pawn(5, 8, 'purple');
     });
 
     it('should represent a coordinate (x,y) and color', function() {
-        expect(move.x).toBe(5);
-        expect(move.y).toBe(8);
-        expect(move.color).toBe('purple');
+        expect(pawn.x).toBe(5);
+        expect(pawn.y).toBe(8);
+        expect(pawn.color).toBe('purple');
     });
 });
 
 describe('A newly constructed GameStatus', function() {
     var gameStatus;
-    var expectedMove = new Move();
-    var expectedWinningPath = [new Move()];
+    var expectedPawn = new Pawn();
+    var expectedWinningPath = [new Pawn()];
 
     beforeEach(function() {
-        expectedMove = new Move();
-        gameStatus = new GameStatus('status marker', expectedMove, expectedWinningPath);
+        expectedPawn = new Pawn();
+        gameStatus = new GameStatus('status marker', expectedPawn, expectedWinningPath);
     });
 
-    it('should represent a given current status and move', function() {
+    it('should represent a given current status and pawn', function() {
         expect(gameStatus.currentStatus).toBe('status marker');
-        expect(gameStatus.move).toBe(expectedMove);
+        expect(gameStatus.pawn).toBe(expectedPawn);
         expect(gameStatus.winningPath).toBe(expectedWinningPath);
     });
 });
@@ -291,94 +291,94 @@ describe('A newly created GameBoard (11x11)', function() {
         gameBoard = new GameBoard(11);
     });
 
-    it('should throw an exception when attempting to place a move out of bounds (x<0)', function() {
+    it('should throw an exception when attempting to place a pawn out of bounds (x<0)', function() {
         expect(function() {
-            gameBoard.addMove(new Move(-1, 0, 'red'));
+            gameBoard.addPawn(new Pawn(-1, 0, 'red'));
         }).toThrow('move is out of bounds');
     });
-    it('should throw an exception when attempting to place a move out of bounds (x>10)', function() {
+    it('should throw an exception when attempting to place a pawn out of bounds (x>10)', function() {
         expect(function() {
-            gameBoard.addMove(new Move(11, 0, 'red'));
+            gameBoard.addPawn(new Pawn(11, 0, 'red'));
         }).toThrow('move is out of bounds');
     });
-    it('should throw an exception when attempting to place a move out of bounds (y<0)', function() {
+    it('should throw an exception when attempting to place a pawn out of bounds (y<0)', function() {
         expect(function() {
-            gameBoard.addMove(new Move(0, -1, 'red'));
+            gameBoard.addPawn(new Pawn(0, -1, 'red'));
         }).toThrow('move is out of bounds');
     });
-    it('should throw an exception when attempting to place a move out of bounds (y>10)', function() {
+    it('should throw an exception when attempting to place a pawn out of bounds (y>10)', function() {
         expect(function() {
-            gameBoard.addMove(new Move(0, 11, 'red'));
+            gameBoard.addPawn(new Pawn(0, 11, 'red'));
         }).toThrow('move is out of bounds');
     });
 });
 
-describe('A GameBoard with a single Move at (5,5) for red', function() {
+describe('A GameBoard with a single Pawn at (5,5) for red', function() {
     var gameBoard;
-    var originalMove = new Move(5, 5, 'red');
+    var originalPawn = new Pawn(5, 5, 'red');
 
     beforeEach(function() {
         gameBoard = new GameBoard(11);
-        gameBoard.addMove(originalMove);
+        gameBoard.addPawn(originalPawn);
     });
 
-    it('should throw an exception when attempting to add a move to the same location', function() {
+    it('should throw an exception when attempting to add a pawn at the same location', function() {
         expect(function() {
-            gameBoard.addMove(new Move(5, 5, 'blue'));
+            gameBoard.addPawn(new Pawn(5, 5, 'blue'));
         }).toThrow('duplicate move');
     });
-    it('should not return a neighbour for a Move at the same position', function() {
-        expect(gameBoard.neighboursOf(new Move(5, 5, 'red'))).toEqual([]);
+    it('should not return a neighbour for a Pawn at the same position', function() {
+        expect(gameBoard.neighboursOf(new Pawn(5, 5, 'red'))).toEqual([]);
     });
-    it('should return a neighbour for a Move at (+1,0) offset', function() {
-        expect(gameBoard.neighboursOf(new Move(6, 5, 'red'))).toEqual([originalMove]);
+    it('should return a neighbour for a Pawn at (+1,0) offset', function() {
+        expect(gameBoard.neighboursOf(new Pawn(6, 5, 'red'))).toEqual([originalPawn]);
     });
-    it('should return a neighbour for a Move at (-1,0) offset', function() {
-        expect(gameBoard.neighboursOf(new Move(4, 5, 'red'))).toEqual([originalMove]);
+    it('should return a neighbour for a Pawn at (-1,0) offset', function() {
+        expect(gameBoard.neighboursOf(new Pawn(4, 5, 'red'))).toEqual([originalPawn]);
     });
-    it('should return a neighbour for a Move at (0,+1) offset', function() {
-        expect(gameBoard.neighboursOf(new Move(5, 6, 'red'))).toEqual([originalMove]);
+    it('should return a neighbour for a Pawn at (0,+1) offset', function() {
+        expect(gameBoard.neighboursOf(new Pawn(5, 6, 'red'))).toEqual([originalPawn]);
     });
-    it('should return a neighbour for a Move at (0,-1) offset', function() {
-        expect(gameBoard.neighboursOf(new Move(5, 4, 'red'))).toEqual([originalMove]);
+    it('should return a neighbour for a Pawn at (0,-1) offset', function() {
+        expect(gameBoard.neighboursOf(new Pawn(5, 4, 'red'))).toEqual([originalPawn]);
     });
-    it('should return a neighbour for a Move at (-1,-1) offset', function() {
-        expect(gameBoard.neighboursOf(new Move(4, 4, 'red'))).toEqual([originalMove]);
+    it('should return a neighbour for a Pawn at (-1,-1) offset', function() {
+        expect(gameBoard.neighboursOf(new Pawn(4, 4, 'red'))).toEqual([originalPawn]);
     });
-    it('should return a neighbour for a Move at (+1,+1) offset', function() {
-        expect(gameBoard.neighboursOf(new Move(6, 6, 'red'))).toEqual([originalMove]);
+    it('should return a neighbour for a Pawn at (+1,+1) offset', function() {
+        expect(gameBoard.neighboursOf(new Pawn(6, 6, 'red'))).toEqual([originalPawn]);
     });
-    it('should not return a neighbour for a Move at (+1,-1) offset', function() {
-        expect(gameBoard.neighboursOf(new Move(6, 4, 'red'))).toEqual([]);
+    it('should not return a neighbour for a Pawn at (+1,-1) offset', function() {
+        expect(gameBoard.neighboursOf(new Pawn(6, 4, 'red'))).toEqual([]);
     });
-    it('should not return a neighbour for a Move at (-1,+1) offset', function() {
-        expect(gameBoard.neighboursOf(new Move(4, 6, 'red'))).toEqual([]);
+    it('should not return a neighbour for a Pawn at (-1,+1) offset', function() {
+        expect(gameBoard.neighboursOf(new Pawn(4, 6, 'red'))).toEqual([]);
     });
-    it('should not return a neighbour for an adjacent Move of a different colour', function() {
-        expect(gameBoard.neighboursOf(new Move(6, 5, 'blue'))).toEqual([]);
+    it('should not return a neighbour for an adjacent Pawn of a different colour', function() {
+        expect(gameBoard.neighboursOf(new Pawn(6, 5, 'blue'))).toEqual([]);
     });
 });
 
-describe('A GameBoard with red Moves at (5,5) and (5,4) for red and a move at (4,5) for blue', function() {
+describe('A GameBoard with red pawns at (5,5) and (5,4) for red and a pawn at (4,5) for blue', function() {
     var gameBoard;
-    var move1 = new Move(5, 5, 'red');
-    var move2 = new Move(5, 4, 'red');
-    var move3 = new Move(4, 5, 'blue');
+    var pawn1 = new Pawn(5, 5, 'red');
+    var pawn2 = new Pawn(5, 4, 'red');
+    var pawn3 = new Pawn(4, 5, 'blue');
 
     beforeEach(function() {
         gameBoard = new GameBoard(11);
-        gameBoard.addMove(move1);
-        gameBoard.addMove(move2);
-        gameBoard.addMove(move3);
+        gameBoard.addPawn(pawn1);
+        gameBoard.addPawn(pawn2);
+        gameBoard.addPawn(pawn3);
     });
 
-    it('should return both red neighbours for a Move at (4,4)', function() {
-        expect(gameBoard.neighboursOf(new Move(4, 4, 'red'))).toEqual([move2, move1]);
+    it('should return both red neighbours for a pawn at (4,4)', function() {
+        expect(gameBoard.neighboursOf(new Pawn(4, 4, 'red'))).toEqual([pawn2, pawn1]);
     });
-    it('should return one neighbour for a Move at (6,4)', function() {
-        expect(gameBoard.neighboursOf(new Move(6, 4, 'red'))).toEqual([move2]);
+    it('should return one neighbour for a pawn at (6,4)', function() {
+        expect(gameBoard.neighboursOf(new Pawn(6, 4, 'red'))).toEqual([pawn2]);
     });
-    it('should return all moves when getting all moves', function() {
-        expect(gameBoard.allMoves()).toEqual([move3, move2, move1]);
+    it('should return all pawns when getting all pawns', function() {
+        expect(gameBoard.allPawns()).toEqual([pawn3, pawn2, pawn1]);
     });
 });

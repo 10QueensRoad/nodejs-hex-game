@@ -1,7 +1,7 @@
 exports.PlayerTurn = PlayerTurn;
 exports.Gameplay = Gameplay;
 exports.HexGame = HexGame;
-exports.Move = Move;
+exports.Pawn = Pawn;
 exports.GameBoard = GameBoard;
 exports.GameStatus = GameStatus;
 
@@ -23,23 +23,23 @@ function PlayerTurn() {
 
 function GameBoard(size) {
     var pawns = [];
-    var lastMove;
+    var lastPawn;
 
     _.times(size, function() {
         pawns.push([]);
     });
 
-    function assertCellExists(moveRequest) {
-        if (moveRequest.x < 0
-            || moveRequest.y < 0
-            || moveRequest.x > size - 1
-            || moveRequest.y > size - 1) {
+    function assertCellExists(pawnPlacementRequest) {
+        if (pawnPlacementRequest.x < 0
+            || pawnPlacementRequest.y < 0
+            || pawnPlacementRequest.x > size - 1
+            || pawnPlacementRequest.y > size - 1) {
             throw 'move is out of bounds';
         }
     }
 
-    function assertCellIsOpen(moveRequest) {
-        if (pawnAt(moveRequest.x, moveRequest.y)) {
+    function assertCellIsOpen(pawnPlacementRequest) {
+        if (pawnAt(pawnPlacementRequest.x, pawnPlacementRequest.y)) {
             throw 'duplicate move';
         }
     }
@@ -66,19 +66,19 @@ function GameBoard(size) {
         });
     };
 
-    this.addMove = function(moveRequest) {
-        assertCellExists(moveRequest);
-        assertCellIsOpen(moveRequest);
-        pawns[moveRequest.x][moveRequest.y] = moveRequest;
-        lastMove = moveRequest;
+    this.addPawn = function(pawnPlacementRequest) {
+        assertCellExists(pawnPlacementRequest);
+        assertCellIsOpen(pawnPlacementRequest);
+        pawns[pawnPlacementRequest.x][pawnPlacementRequest.y] = pawnPlacementRequest;
+        lastPawn = pawnPlacementRequest;
     };
 
-    this.lastMove = function() {
-        return lastMove;
+    this.lastPawn = function() {
+        return lastPawn;
     };
 
 
-    this.allMoves = function() {
+    this.allPawns = function() {
         // Compress arrays and eliminate empties.
         return _.compact(_.flatten(pawns));
     }
@@ -140,94 +140,93 @@ function HexGame(gameBoardSize) {
 
     var CONNECTION = {
         NO_CONNECTION: {
-            updateConnection: function(move) {
+            updateConnection: function(pawn) {
                 // There's no connection, nothing to update!
             }
         },
         A: {
-            updateConnection: function(move) {
-                if (move.connectedTo === CONNECTION.NO_CONNECTION) {
-                    move.connectedTo = CONNECTION.A;
-                    updateConnections(move);
-                } else if (move.connectedTo === CONNECTION.B) {
-                    move.connectedTo = CONNECTION.BOTH;
-                    updateConnections(move);
+            updateConnection: function(pawn) {
+                if (pawn.connectedTo === CONNECTION.NO_CONNECTION) {
+                    pawn.connectedTo = CONNECTION.A;
+                    updateImmediateConnections(pawn);
+                } else if (pawn.connectedTo === CONNECTION.B) {
+                    pawn.connectedTo = CONNECTION.BOTH;
+                    updateImmediateConnections(pawn);
                 }
             }
         },
         B: {
-            updateConnection: function(move) {
-                if (move.connectedTo === CONNECTION.NO_CONNECTION) {
-                    move.connectedTo = CONNECTION.B;
-                    updateConnections(move);
-                } else if (move.connectedTo === CONNECTION.A) {
-                    move.connectedTo = CONNECTION.BOTH;
-                    updateConnections(move);
+            updateConnection: function(pawn) {
+                if (pawn.connectedTo === CONNECTION.NO_CONNECTION) {
+                    pawn.connectedTo = CONNECTION.B;
+                    updateImmediateConnections(pawn);
+                } else if (pawn.connectedTo === CONNECTION.A) {
+                    pawn.connectedTo = CONNECTION.BOTH;
+                    updateImmediateConnections(pawn);
                 }
             }
         },
         BOTH: {
-            updateConnection: function(move) {
-                if (move.connectedTo !== CONNECTION.BOTH) {
-                    move.connectedTo = CONNECTION.BOTH;
-                    updateConnections(move);
+            updateConnection: function(pawn) {
+                if (pawn.connectedTo !== CONNECTION.BOTH) {
+                    pawn.connectedTo = CONNECTION.BOTH;
+                    updateImmediateConnections(pawn);
                 }
             }
         }
     };
 
-    function isCorrectPlayersTurn(moveRequest) {
-        return gameplay.currentPlayer() == moveRequest.color;
+    function isCorrectPlayersTurn(pawnPlacementRequest) {
+        return gameplay.currentPlayer() == pawnPlacementRequest.color;
     }
 
-    // This should be refactored soon.
-    function updatePaths(move) {
-        move.connectedTo = CONNECTION.NO_CONNECTION;
-        // Step 1: Mark move as being connectedTo if it is along a wall.
-        // "red" has the north-south wall. They want to make contact with x=0 or x=max
-        // "blue" has the east-west wall. They want to make contact with y=0 or y=max.
-        if (move.color === 'red') {
-            if (move.x === 0) {
-                move.connectedTo = CONNECTION.A;
-            } else if (move.x === gameBoardSize - 1) {
-                move.connectedTo = CONNECTION.B;
-            }
-        } else if (move.color === 'blue') {
-            if (move.y === 0) {
-                move.connectedTo = CONNECTION.A;
-            } else if (move.y === gameBoardSize - 1) {
-                move.connectedTo = CONNECTION.B;
-            }
+    function pawnIsOnWallA(pawn) {
+        return ((pawn.color === 'red' && pawn.x === 0)
+            || (pawn.color === 'blue' && pawn.y === 0));
+    }
+
+    function pawnIsOnWallB(pawn) {
+        return ((pawn.color === 'red' && pawn.x === gameBoardSize - 1)
+            || (pawn.color === 'blue' && pawn.y === gameBoardSize - 1));
+    }
+
+    function updatePathsStartingFrom(pawn) {
+        if (pawnIsOnWallA(pawn)) {
+            pawn.connectedTo = CONNECTION.A;
+        } else if (pawnIsOnWallB(pawn)) {
+            pawn.connectedTo = CONNECTION.B;
+        } else {
+            pawn.connectedTo = CONNECTION.NO_CONNECTION;
         }
-        updateConnections(move);
+        updateImmediateConnections(pawn);
     }
 
-    function updateConnections(move) {
-        var neighbours = gameBoard.neighboursOf(move);
+    function updateImmediateConnections(pawn) {
+        var neighbours = gameBoard.neighboursOf(pawn);
         _.each(neighbours, function(neighbour) {
-            if (move.connectedTo !== neighbour.connectedTo) {
-                move.connectedTo.updateConnection(neighbour);
-                neighbour.connectedTo.updateConnection(move);
+            if (pawn.connectedTo !== neighbour.connectedTo) {
+                pawn.connectedTo.updateConnection(neighbour);
+                neighbour.connectedTo.updateConnection(pawn);
             }
         });
     }
 
     function getWinningPath() {
-        return _.where(gameBoard.allMoves(), {connectedTo: CONNECTION.BOTH});
+        return _.where(gameBoard.allPawns(), {connectedTo: CONNECTION.BOTH});
     }
 
     this.start = function() {
         gameplay.started();
     };
 
-    this.move = function(moveRequest) {
+    this.placePawn = function(pawnPlacementRequest) {
         // This is currently the only "condition" that will silently fail the move instead
         // of throwing an exception. Maybe we should make it throw an exception, too.
-        if (isCorrectPlayersTurn(moveRequest)) {
-            gameBoard.addMove(moveRequest);
+        if (isCorrectPlayersTurn(pawnPlacementRequest)) {
+            gameBoard.addPawn(pawnPlacementRequest);
             // This should possibly refactored to a class that deals with updating paths.
-            updatePaths(gameBoard.lastMove());
-            if (gameBoard.lastMove().connectedTo === CONNECTION.BOTH) {
+            updatePathsStartingFrom(gameBoard.lastPawn());
+            if (gameBoard.lastPawn().connectedTo === CONNECTION.BOTH) {
                 gameplay.won();
                 winningPath = getWinningPath();
             } else {
@@ -238,28 +237,28 @@ function HexGame(gameBoardSize) {
     };
 
     this.fullStatus = function() {
-        return new FullStatus(gameplay.currentStatus(), gameBoard.allMoves(), winningPath);
+        return new FullStatus(gameplay.currentStatus(), gameBoard.allPawns(), winningPath);
     };
 
     this.gameStatus = function() {
-        return new GameStatus(gameplay.currentStatus(), gameBoard.lastMove(), winningPath);
+        return new GameStatus(gameplay.currentStatus(), gameBoard.lastPawn(), winningPath);
     };
 }
 
-function Move(x, y, color) {
+function Pawn(x, y, color) {
     this.x = x;
     this.y = y;
     this.color = color;
 }
 
-function GameStatus(currentStatus, move, winningPath) {
+function GameStatus(currentStatus, pawn, winningPath) {
     this.currentStatus = currentStatus;
-    this.move = move;
+    this.pawn = pawn;
     this.winningPath = winningPath;
 }
 
-function FullStatus(currentStatus, moves, winningPath) {
+function FullStatus(currentStatus, pawns, winningPath) {
     this.currentStatus = currentStatus;
-    this.moves = moves;
+    this.pawns = pawns;
     this.winningPath = winningPath;
 }

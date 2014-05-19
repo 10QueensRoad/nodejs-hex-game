@@ -24,7 +24,7 @@ angular.module('hexGame.controllers', [])
                 if (!serverResponse.isError) {
                     $scope.hasError = false;
                     addPawnToArray(angular.isDefined($scope.side) ? $scope.pawns : movesToDisplayWhenLoginAsViewer,
-                        serverResponse.move);
+                        serverResponse.pawn);
                     addWinningPathToArray(
                         angular.isDefined($scope.side) ? $scope.winningPath : winningPathToDisplayWhenLoginAsViewer,
                         serverResponse.winningPath);
@@ -97,7 +97,7 @@ angular.module('hexGame.controllers', [])
         $scope.isPlayer = function() {
             return $scope.side == 'red' || $scope.side == 'blue';
         };
-        
+
         $scope.loginAsViewer = function() {
         	$scope.side = 'viewer';
         	addCells();
@@ -106,7 +106,7 @@ angular.module('hexGame.controllers', [])
             addWinningPathToArray($scope.winningPath, winningPathToDisplayWhenLoginAsViewer);
             $scope.showGameScreen();
         };
-        
+
         $scope.isViewer = function() {
             return $scope.side == 'viewer';
         };
