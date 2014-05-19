@@ -318,7 +318,7 @@ describe('A GameBoard with a single Move at (5,5) for red', function() {
     var originalMove = new Move(5, 5, 'red');
 
     beforeEach(function() {
-        gameBoard = new GameBoard(11, 11);
+        gameBoard = new GameBoard(11);
         gameBoard.addMove(originalMove);
     });
 
@@ -356,5 +356,29 @@ describe('A GameBoard with a single Move at (5,5) for red', function() {
     });
     it('should not return a neighbour for an adjacent Move of a different colour', function() {
         expect(gameBoard.neighboursOf(new Move(6, 5, 'blue'))).toEqual([]);
+    });
+});
+
+describe('A GameBoard with red Moves at (5,5) and (5,4) for red and a move at (4,5) for blue', function() {
+    var gameBoard;
+    var move1 = new Move(5, 5, 'red');
+    var move2 = new Move(5, 4, 'red');
+    var move3 = new Move(4, 5, 'blue');
+
+    beforeEach(function() {
+        gameBoard = new GameBoard(11);
+        gameBoard.addMove(move1);
+        gameBoard.addMove(move2);
+        gameBoard.addMove(move3);
+    });
+
+    it('should return both red neighbours for a Move at (4,4)', function() {
+        expect(gameBoard.neighboursOf(new Move(4, 4, 'red'))).toEqual([move2, move1]);
+    });
+    it('should return one neighbour for a Move at (6,4)', function() {
+        expect(gameBoard.neighboursOf(new Move(6, 4, 'red'))).toEqual([move2]);
+    });
+    it('should return all moves when getting all moves', function() {
+        expect(gameBoard.allMoves()).toEqual([move3, move2, move1]);
     });
 });

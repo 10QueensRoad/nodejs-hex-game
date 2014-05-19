@@ -39,7 +39,7 @@ function GameBoard(size) {
     }
 
     function assertCellIsOpen(moveRequest) {
-        if (pawns[moveRequest.x][moveRequest.y]) {
+        if (pawnAt(moveRequest.x, moveRequest.y)) {
             throw 'duplicate move';
         }
     }
@@ -75,6 +75,12 @@ function GameBoard(size) {
 
     this.lastMove = function() {
         return lastMove;
+    };
+
+
+    this.allMoves = function() {
+        // Compress arrays and eliminate empties.
+        return _.compact(_.flatten(pawns));
     }
 }
 
@@ -130,6 +136,7 @@ function HexGame(gameBoardSize) {
     gameBoardSize = gameBoardSize || DEFAULT_GAME_BOARD_SIZE;
     var gameplay = new Gameplay();
     var gameBoard = new GameBoard(gameBoardSize);
+    var winningPath;
 
     var CONNECTION = {
         NO_CONNECTION: {
@@ -198,12 +205,15 @@ function HexGame(gameBoardSize) {
     function updateConnections(move) {
         var neighbours = gameBoard.neighboursOf(move);
         _.each(neighbours, function(neighbour) {
-            // The less well connected node should take the same value as the more well-connected
-            // node, then we should call updateConnections for the updated node. If both nodes are
-            // equally well-connected, don't bother.
-            move.connectedTo.updateConnection(neighbour);
-            neighbour.connectedTo.updateConnection(move);
+            if (move.connectedTo !== neighbour.connectedTo) {
+                move.connectedTo.updateConnection(neighbour);
+                neighbour.connectedTo.updateConnection(move);
+            }
         });
+    }
+
+    function getWinningPath() {
+        return _.where(gameBoard.allMoves(), {connectedTo: CONNECTION.BOTH});
     }
 
     this.start = function() {
@@ -219,6 +229,7 @@ function HexGame(gameBoardSize) {
             updatePaths(gameBoard.lastMove());
             if (gameBoard.lastMove().connectedTo === CONNECTION.BOTH) {
                 gameplay.won();
+                winningPath = getWinningPath();
             } else {
                 gameplay.nextPlayer();
             }
@@ -226,8 +237,12 @@ function HexGame(gameBoardSize) {
         return this.gameStatus();
     };
 
+    this.fullStatus = function() {
+        return new FullStatus(gameplay.currentStatus(), gameBoard.allMoves(), winningPath);
+    };
+
     this.gameStatus = function() {
-        return new GameStatus(gameplay.currentStatus(), gameBoard.lastMove());
+        return new GameStatus(gameplay.currentStatus(), gameBoard.lastMove(), winningPath);
     };
 }
 
@@ -240,5 +255,11 @@ function Move(x, y, color) {
 function GameStatus(currentStatus, move, winningPath) {
     this.currentStatus = currentStatus;
     this.move = move;
+    this.winningPath = winningPath;
+}
+
+function FullStatus(currentStatus, moves, winningPath) {
+    this.currentStatus = currentStatus;
+    this.moves = moves;
     this.winningPath = winningPath;
 }

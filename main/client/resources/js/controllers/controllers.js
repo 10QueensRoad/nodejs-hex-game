@@ -21,7 +21,8 @@ angular.module('hexGame.controllers', [])
                     if (angular.isDefined(serverResponse.move)
                         && _.where($scope.pawns, serverResponse.move).length == 0) {
                         var newPawn = serverResponse.move;
-                        console.log('CurrentStatus is',JSON.stringify(serverResponse.currentStatus));
+                        console.log('currentStatus is',JSON.stringify(serverResponse.currentStatus));
+                        console.log('winningPath is',JSON.stringify(serverResponse.winningPath));
                         $scope.pawns.push(newPawn);
                     }
                 } else {
