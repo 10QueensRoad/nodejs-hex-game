@@ -196,7 +196,8 @@ angular.module('hexGame.d3AngularServices', [])
                     .attr('opacity', 0)
                     .transition()
                     .attr('opacity', 1)
-                    .duration(boardConfiguration.animations.shortDuration)
+                    .duration(boardConfiguration.animations.boardCells ? boardConfiguration.animations.shortDuration :
+                        boardConfiguration.animations.longDuration)
                     .delay(delayFn);
             } else {
                 return d3Element;

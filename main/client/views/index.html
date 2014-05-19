@@ -18,30 +18,19 @@
     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
 
 <body ng-app="hexGame" ng-controller="HexController">
-<div ng-show="false">Please wait ...</div>
-<div ng-cloak ng-show="delayShow">
-    <div class="form-group has-error" ng-show="showError()">
-        <label class="control-label">Error: It is not your turn to make move.</label>
+    <div class="welcomeScreen" ng-show="!side">
+        <div class="welcomeScreenJoin" ng-show="canJoinAsPlayer()" ng-click="loginAsPlayer()">Join the game</div>
+        <div class="welcomeScreenView" ng-click="side = 'viewer'">View the game</div>
     </div>
-    <div class="form-group" ng-show="canJoinAsPlayer('red')">
-        <button class="btn btn-success"ng-click="loginAsPlayer('red')">Join as a red player</button>
-    </div>
-    <div class="form-group" ng-show="canJoinAsPlayer('blue')">
-        <button class="btn btn-success"ng-click="loginAsPlayer('blue')">Join as a blue player</button>
-    </div>
-    <div ng-show="isPlayer()">
-        <div class="form-group">
-            You are the {{side}} player
-        </div>
-        <div class="form-group">
-            <board-directive></board-directive>
-        </div>
-        <div class="form-group">
-            <button id="logout-action" class="btn btn-primary" ng-click="logout()">Quit</button>
+    <div ng-show="side">
+        <board-directive></board-directive>
+        <div class="gameControls" ng-show="isPlayer()">
+            <div class="gameControlsLogo"><img src="resources/images/logo.png" /></div>
+            <div class="gameControlsSide">You are the <span ng-class="{redSide: side == 'red', blueSide: side =='blue'}">{{side}}</span> player</div>
+            <div class="gameControlsInstructions">Connect the two borders<br />of your colour<br />to win the game!</div>
+            <div class="gameControlsLogout"><button id="logout-action" class="btn btn-primary" ng-click="logout()">Quit</button></div>
         </div>
     </div>
-    <p class="text-success" ng-bind-html-unsafe='gameActions' />
-</div>
 <script src="/socket.io/socket.io.js"></script>
 </body>
 </html>

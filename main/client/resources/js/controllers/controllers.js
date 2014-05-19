@@ -4,7 +4,6 @@
 
 angular.module('hexGame.controllers', [])
     .controller('HexController', function($scope, boardConfiguration, gameStaticData, serverCommunicationService, d3TransitionsService) {
-        $scope.gameActions = '';
         $scope.side = undefined;
         $scope.hasError = false;
         var playerStatus = {};
@@ -19,8 +18,8 @@ angular.module('hexGame.controllers', [])
             $scope.$apply(function() {
                 if (!serverResponse.isError) {
                     $scope.hasError = false;
-                    $scope.gameActions = serverResponse.info;
-                    if (angular.isDefined(serverResponse.move)) {
+                    if (angular.isDefined(serverResponse.move)
+                        && _.where($scope.pawns, serverResponse.move).length == 0) {
                         var newPawn = serverResponse.move;
                         console.log('CurrentStatus is',JSON.stringify(serverResponse.currentStatus));
                         $scope.pawns.push(newPawn);
@@ -52,9 +51,8 @@ angular.module('hexGame.controllers', [])
                 $scope.showError();
             });
 
-        $scope.canJoinAsPlayer = function(color) {
-            var hasPlayer = color == 'red' ? playerStatus.hasRedPlayer : playerStatus.hasBluePlayer;
-            return !hasPlayer && !$scope.side;
+        $scope.canJoinAsPlayer = function() {
+            return (!playerStatus.hasRedPlayer || !playerStatus.hasBluePlayer) && !$scope.side;
         };
 
         $scope.isPlayer = function() {
@@ -65,7 +63,15 @@ angular.module('hexGame.controllers', [])
             return $scope.hasError && errorSide == $scope.side;
         };
 
-        $scope.loginAsPlayer = function(color) {
+        $scope.loginAsPlayer = function() {
+            var color;
+            if (!playerStatus.hasRedPlayer) {
+                color = 'red';
+            } else if (!playerStatus.hasBluePlayer) {
+                color = 'blue';
+            } else {
+                return;
+            }
             serverConnection.loginAsPlayer(color, function() {
                 $scope.side = color;
                 $scope.cells.push.apply($scope.cells, gameStaticData.boardCells);
