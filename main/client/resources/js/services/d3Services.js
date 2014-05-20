@@ -14,9 +14,12 @@ angular.module('hexGame.d3AngularServices', [])
             'pawns': true,
             'boardCells': false, //TODO make this dependent on user agent
             'boardTitle': true,
+            'winningPath': true,
+            'winningMessage': true,
             'singleElementDelay': 50,
             'longDuration': 1000,
-            'shortDuration': 500
+            'shortDuration': 500,
+            'veryLongDuration': 2000
         },
         'cellSymbolId' : 'cellSymbol'
     })
@@ -57,6 +60,10 @@ angular.module('hexGame.d3AngularServices', [])
                 (thisService.getCellXValue(cell) + thisService.getCellYValue(cell)) * boardConfiguration.cellWidth / 2;
         };
 
+        this.getCellMiddleXCoordinate = function(cell) {
+            return thisService.getCellXCoordinate(cell) + boardConfiguration.cellWidth / 2;
+        };
+
         this.getTopCoordinateOfMiddleCellRow = function() {
             return boardConfiguration.boardTopMargin +
                 (boardConfiguration.cellsRowWidth - 1) * boardConfiguration.cellHeight * 0.75;
@@ -68,6 +75,10 @@ angular.module('hexGame.d3AngularServices', [])
                     * boardConfiguration.cellHeight * 0.75;
         };
 
+        this.getCellMiddleYCoordinate = function(cell) {
+            return thisService.getCellYCoordinate(cell) + boardConfiguration.cellHeight / 2;
+        };
+        
         this.getMiddleYCoordinateOfMiddleCellRow = function() {
             return thisService.getTopCoordinateOfMiddleCellRow()
                 + boardConfiguration.cellHeight / 2;
@@ -80,6 +91,16 @@ angular.module('hexGame.d3AngularServices', [])
 
         this.getBoardTitleLetterYCoordinate = function() {
             return thisService.getTopCoordinateOfMiddleCellRow() + 0.75 * boardConfiguration.cellHeight;
+        };
+
+        this.getWinningMessageXCoordinate = function() {
+            return boardConfiguration.boardLeftMargin +
+                ((boardConfiguration.cellsRowWidth - 1) * 0.5 + 0.5) * boardConfiguration.cellWidth;
+        };
+
+        this.getWinningMessageYCoordinate = function() {
+            return thisService.getTopCoordinateOfMiddleCellRow() +
+                (0.75 - boardConfiguration.cellsRowWidth * 0.25) * boardConfiguration.cellHeight;
         };
 
         this.getBottomOfBottomCellRow = function() {
@@ -175,6 +196,7 @@ angular.module('hexGame.d3AngularServices', [])
                     .attr('y', d3CoordinatesService.getCellYCoordinate);
             }
         };
+
         this.fadeOutMoveUpAndRemove = function(d3Element, animate, delayFn) {
             if (animate) {
                 return d3Element
@@ -190,6 +212,7 @@ angular.module('hexGame.d3AngularServices', [])
                 return d3Element.remove();
             }
         };
+
         this.fadeIn = function(d3Element, animate, delayFn) {
             if (animate) {
                 return d3Element
@@ -203,6 +226,7 @@ angular.module('hexGame.d3AngularServices', [])
                 return d3Element;
             }
         };
+
         this.fadeOut = function(d3Element, animate, delayFn) {
             if (animate) {
                 return d3Element
@@ -218,9 +242,28 @@ angular.module('hexGame.d3AngularServices', [])
                 return d3Element;
             }
         };
+
         this.boardCellsAnimationTotalDuration = function() {
             return boardConfiguration.animations.boardCells ?
                 2 * (boardConfiguration.cellsRowWidth + 1) * boardConfiguration.animations.singleElementDelay
                 + boardConfiguration.animations.longDuration : 0;
+        };
+
+        this.animatePath = function(d3Path, animate, delayFn) {
+        	if (animate) {
+                var node = d3Path.node();
+                if (node == null) {
+                    return;
+                }
+                var totalLength = node.getTotalLength();
+                d3Path
+    			    .attr("stroke-dasharray", totalLength + " " + totalLength)
+    			    .attr("stroke-dashoffset", totalLength)
+    			    .transition()
+    			        .duration(boardConfiguration.animations.veryLongDuration)
+    			        .delay(delayFn)
+    			        .ease("linear")
+    			        .attr("stroke-dashoffset", 0);
+    		}
         };
     });

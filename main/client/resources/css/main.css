@@ -136,3 +136,17 @@
     pointer-events: none;
     text-anchor: middle;
 }
+
+.winningPath {
+	stroke: yellow;
+    stroke-width: 2;
+    fill: none;
+}
+
+.winningMessage {
+    font-family: AlrightSansMedium,"Helvetica Neue",Helvetica,Arial,sans-serif;
+    font-size: 26px;
+    fill: black;
+    pointer-events: none;
+    text-anchor: middle;
+}

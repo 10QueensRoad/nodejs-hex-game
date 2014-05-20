@@ -34,6 +34,7 @@ angular.module('hexGame.directives.boardDirective', [])
                 var pawnsGroup = svg.append("g").attr("id", "pawnsGroup");
                 var bordersGroup = svg.append("g").attr("id", "bordersGroup");
                 var boardTitleGroup = svg.append("g").attr("id", "boardTitleGroup");
+                var winningPathGroup = svg.append("g").attr("id", "winningPathGroup");
 
                 //Add border polylines
                 d3ComponentFactoryService.appendBorders(bordersGroup);
@@ -56,6 +57,13 @@ angular.module('hexGame.directives.boardDirective', [])
                 scope.$watchCollection('boardTitle', function(newValue) { //TODO: Can't d3 watch the data itself?
                     if (angular.isArray(newValue)) {
                         drawBoardTitle();
+                    }
+                });
+
+                //Draw winning path whenever needed
+                scope.$watchCollection('winningPath', function(newValue) { //TODO: Can't d3 watch the data itself?
+                    if (angular.isArray(newValue)) {
+                        drawWinningPath();
                     }
                 });
 
@@ -121,7 +129,7 @@ angular.module('hexGame.directives.boardDirective', [])
                 var drawBoardTitle = function() {
                     var boardTitleLetters = boardTitleGroup.selectAll(".boardTitle")
                         .data(scope.boardTitle);
-                    //Add new cells
+                    //Add new letters
                     d3TransitionsService.fadeIn(boardTitleLetters.enter()
                         .append('text')
                         .attr('x', d3CoordinatesService.getBoardTitleLetterXCoordinate)
@@ -130,11 +138,53 @@ angular.module('hexGame.directives.boardDirective', [])
                         boardConfiguration.animations.boardTitle,
                         function() { return d3TransitionsService.boardCellsAnimationTotalDuration(); })
                         .text( function (d) { return d; });
-                    //Remove deleted cells
+                    //Remove deleted letters
                     d3TransitionsService.fadeOut(boardTitleLetters.exit(),
                         boardConfiguration.animations.boardTitle,
                         function() { return d3TransitionsService.boardCellsAnimationTotalDuration(); });
-                }
+                };
+                
+                /* Winning path drawing function */
+                var drawWinningPath = function() {
+                    var winningTextData = [];
+                    var winningText = scope.getWinningSide();
+                    if (angular.isDefined(winningText)) {
+                        winningText = winningText.charAt(0).toUpperCase() + winningText.slice(1) + " won the game!!!";
+                        winningTextData.push(winningText);
+                    }
+                    var winningPathSegments = winningPathGroup.selectAll(".winningPathSegments")
+                        .data(scope.winningPath);
+                    var winningMessage = winningPathGroup.selectAll(".winningMessageText")
+                        .data(winningTextData);
+                    //Add new segments
+                    var line = d3.svg.line()
+      					.interpolate("linear")
+                        .x(d3CoordinatesService.getCellMiddleXCoordinate)
+                        .y(d3CoordinatesService.getCellMiddleYCoordinate);
+                    d3TransitionsService.animatePath(winningPathSegments.enter()
+                        .append('path')
+                        .attr("d", line(scope.winningPath))
+                        .attr('class', 'winningPath'),
+                        boardConfiguration.animations.winningPath,
+                        function() { return boardConfiguration.animations.shortDuration; });
+                    //Add winning message
+                    d3TransitionsService.fadeIn(winningMessage.enter()
+                            .append('text')
+                            .attr('x', d3CoordinatesService.getWinningMessageXCoordinate())
+                            .attr('y', d3CoordinatesService.getWinningMessageYCoordinate())
+                            .attr('class', 'winningMessage')
+                            .text(function (d) { return d; }),
+                        boardConfiguration.animations.winningMessage,
+                        function() { return boardConfiguration.animations.veryLongDuration; });
+                    //Remove deleted segments
+                    d3TransitionsService.fadeOut(winningPathSegments.exit(),
+                        boardConfiguration.animations.winningPath,
+                        function() { return boardConfiguration.animations.shortDuration; });
+                    //Remove winning message
+                    d3TransitionsService.fadeOut(winningMessage.exit(),
+                        boardConfiguration.animations.winningMessage,
+                        function() { return boardConfiguration.animations.shortDuration; });
+                };
             }
         }
     });
