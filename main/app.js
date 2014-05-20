@@ -1,8 +1,7 @@
 var jwtSecret = 'hex game secret private key';
 var response = {};
-var playerStatus = {};
-var blueToken;
-var redToken;
+var playersConnected = {};
+var playerTokens = {};
 
 _ = require('./client/resources/js/lib/lodash-2.4.1');
 
@@ -22,36 +21,25 @@ app.get('/', function (req, res) {
 
 app.use('/resources', express.static(__dirname + "/client/resources"));
 
-app.post('/red', function (req, res) {
-    var redSideProfile = {
-        side: 'red'
+app.post('/joinAsPlayer', function (req, res) {
+	var color = playerTokens['red'] ? (playerTokens['blue'] ? undefined : 'blue') : 'red';
+	if (!color) {
+		return res.send(403, 'Game already in progress');
+	}
+    var playerSideProfile = {
+        side: color
     };
-    redToken = jwt.sign(redSideProfile, jwtSecret, { expiresInMinutes: 60*5 });
-    res.json({token: redToken});
-    if (blueToken) {
-        hexGame.start();
-    }
-});
-
-app.post('/blue', function (req, res) {
-    var blueSideProfile = {
-        side: 'blue'
-    };
-
-    blueToken = jwt.sign(blueSideProfile, jwtSecret, { expiresInMinutes: 60*5 });
-    res.json({token: blueToken});
-    if (redToken) {
-        hexGame.start();
-    }
+    playerTokens[color] = jwt.sign(playerSideProfile, jwtSecret, { expiresInMinutes: 15 });
+    res.json({token: playerTokens[color], side: color, gameStatus: hexGame.gameStatus()});
 });
 
 app.post('/viewer', function (req, res) {
-    var blueSideProfile = {
+    var viewerProfile = {
         side: 'viewer'
     };
 
-    var viewerToken = jwt.sign(blueSideProfile, jwtSecret, { expiresInMinutes: 60*60 });
-    res.json({token: viewerToken, playerStatus: playerStatus});
+    var viewerToken = jwt.sign(viewerProfile, jwtSecret, { expiresInMinutes: 60 });
+    res.json({token: viewerToken, fullStatus: hexGame.fullStatus()});
 });
 
 io.set('authorization', socketioJwt.authorize({
@@ -60,20 +48,20 @@ io.set('authorization', socketioJwt.authorize({
 }));
 
 io.sockets.on('connection', function (socket) {
-    console.log("notification: --------------------------- " + socket.handshake.decoded_token.side, 'connected');
     var side = socket.handshake.decoded_token.side;
+    console.log("notification: --------------------------- " + side, 'connected');
     if (side !== 'blue' && side !== 'red') {
         return;
     }
-    if (side == 'blue') {
-        playerStatus.hasBluePlayer = true;
-    } else if (side == 'red') {
-        playerStatus.hasRedPlayer = true;
+    playersConnected[side] = true;
+    if (playersConnected['red'] && playersConnected['blue']) {
+        hexGame.start();
+		io.sockets.emit('gameStatus', hexGame.gameStatus());
     }
-    io.sockets.emit('playerStatus', playerStatus);
 
     socket.on('moveRequest', function (moveRequest) {
-        if ((!redToken || !blueToken) || (moveRequest.token != blueToken && moveRequest.token != redToken)) {
+        if ((!playersConnected['red'] || !playersConnected['blue']) || 
+        	(!_.some(playerTokens, function(d) { return d === moveRequest.token; }))) {
             return;
         }
         var gameStatus;
@@ -87,19 +75,16 @@ io.sockets.on('connection', function (socket) {
             response.isError = true;
         }
 
-        // This should be returned as a gameStatus. Let's work out how to combine
-        // the gameStatus and playerStatus in a meaningful way, if we need to return both at once.
-        response.playerStatus = playerStatus;
-        io.sockets.emit('moveResponse', _.extend({}, response, gameStatus));
+        io.sockets.emit('gameStatus', gameStatus);
     }).on('logout', function(logoutRequest) {
-        if (logoutRequest.token == blueToken) {
-            blueToken = undefined;
-            playerStatus.hasBluePlayer = false;
-        } else if(logoutRequest.token == redToken) {
-            redToken = undefined;
-            playerStatus.hasRedPlayer = false;
+    	var color = _.findKey(playerTokens, function(d) { return d === logoutRequest.token; });
+        if (color) {
+            playerTokens[color] = undefined;
+            playersConnected[color] = false;
+            //TODO: hexGame.reset();
+			io.sockets.emit('gameStatus', hexGame.gameStatus());
+            console.log("notification: --------------------------- " + color, 'disconnected');
         }
-        io.sockets.emit('playerStatus', playerStatus);
     });
 });
 

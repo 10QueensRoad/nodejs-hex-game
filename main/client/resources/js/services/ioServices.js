@@ -46,11 +46,11 @@ angular.module('hexGame.ioAngularServices', [])
                 socket.emit(eventType, _.assign(data || {}, {token: token}));
             };
 
-            this.loginAsPlayer = function(color, successCallback, errorCallback) {
-                $http.post('/' + color, {})
+            this.loginAsPlayer = function(successCallback, errorCallback) {
+                $http.post('/joinAsPlayer', {})
                     .success(function(serverResponse) {
                         thisConnection.connectToServerEvents(serverResponse.token);
-                        successCallback();
+                        successCallback(serverResponse);
                     })
                     .error(errorCallback);
             };

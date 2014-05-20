@@ -72,6 +72,11 @@
     font-size: 22px;
 }
 
+.gameControlsTurn {
+	font-size: 22px;
+    text-align: center;
+}
+
 .gameControlsLogout {
     margin-top: 10px;
     text-align: center;

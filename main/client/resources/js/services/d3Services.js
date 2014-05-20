@@ -177,6 +177,7 @@ angular.module('hexGame.d3AngularServices', [])
     })
     /* Service to build and append D3 elements */
     .service('d3TransitionsService', function(boardConfiguration, d3CoordinatesService) {
+    	var thisService = this;
         this.fadeInAndMoveDown = function(d3Element, animate, delayFn) {
             if (animate) {
                 return d3Element
@@ -247,6 +248,12 @@ angular.module('hexGame.d3AngularServices', [])
             return boardConfiguration.animations.boardCells ?
                 2 * (boardConfiguration.cellsRowWidth + 1) * boardConfiguration.animations.singleElementDelay
                 + boardConfiguration.animations.longDuration : 0;
+        };
+        
+        this.boardFadeOutAnimationTotalDuration = function() {
+        	return (boardConfiguration.animations.boardTitle ? 1 : 0) * boardConfiguration.animations.shortDuration
+                + (boardConfiguration.animations.boardCells ? 1 : 0) * thisService.boardCellsAnimationTotalDuration()
+                + boardConfiguration.animations.singleElementDelay;
         };
 
         this.animatePath = function(d3Path, animate, delayFn) {

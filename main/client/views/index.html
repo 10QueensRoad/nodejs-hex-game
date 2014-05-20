@@ -15,19 +15,25 @@
     <script type="text/javascript" src="resources/js/controllers/controllers.js"></script>
     <script type="text/javascript" src="resources/js/directives/boardDirective.js"></script>
 
-    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css"> <!-- TODO : use local copy -->
 
 <body ng-app="hexGame" ng-controller="HexController">
     <div class="welcomeScreen" ng-show="!side">
         <div class="welcomeScreenJoin" ng-show="canJoinAsPlayer()" ng-click="loginAsPlayer()">Join the game</div>
-        <div class="welcomeScreenView" ng-click="side = 'viewer'">View the game</div>
+        <div class="welcomeScreenView" ng-click="loginAsViewer()">View the game</div>
     </div>
     <div ng-show="side">
         <board-directive></board-directive>
-        <div class="gameControls" ng-show="isPlayer()">
+        <div class="gameControls">
             <div class="gameControlsLogo"><img src="resources/images/logo.png" /></div>
-            <div class="gameControlsSide">You are the <span ng-class="{redSide: side == 'red', blueSide: side =='blue'}">{{side}}</span> player</div>
-            <div class="gameControlsInstructions">Connect the two borders<br />of your colour<br />to win the game!</div>
+            <div ng-show="isPlayer()">
+            	<div class="gameControlsSide">You are the <span ng-class="{redSide: side == 'red', blueSide: side =='blue'}">{{side}}</span> player</div>
+            	<div class="gameControlsTurn" ng-show="isPlayerTurn()">It is your turn!</div>
+            	<div class="gameControlsInstructions">Connect the two borders<br />of your colour<br />to win the game!</div>
+            </div>
+            <div ng-show="isViewer()">
+            	<div class="gameControlsSide">You are a viewer</div>
+            </div>
             <div class="gameControlsLogout"><button id="logout-action" class="btn btn-primary" ng-click="logout()">Quit</button></div>
         </div>
     </div>

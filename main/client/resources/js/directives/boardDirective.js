@@ -22,7 +22,7 @@ angular.module('hexGame.directives.boardDirective', [])
                 var d3 = d3Service.d3;
                 var svg = d3.select(element[0])
                     .append('svg')
-                        .style('width', '100%')
+                        .style('width', '100%')//TODO: calculate this instead
                         .style('height', '100%');
                 var previousPawnsCount = 0;
 

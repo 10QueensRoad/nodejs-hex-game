@@ -16,7 +16,7 @@ function PlayerTurn() {
     };
 
     this.next = function() {
-        currentPlayerIndex = (currentPlayerIndex + 1) % 2
+        currentPlayerIndex = (currentPlayerIndex + 1) % 2;
         return this.current();
     };
 }
