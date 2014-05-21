@@ -22,7 +22,7 @@ app.get('/', function (req, res) {
 app.use('/resources', express.static(__dirname + "/client/resources"));
 
 app.post('/joinAsPlayer', function (req, res) {
-	var color = playerTokens['red'] ? (playerTokens['blue'] ? undefined : 'blue') : 'red';
+	var color = !playerTokens['red'] ? 'red' : (!playerTokens['blue'] ? 'blue' : undefined);
 	if (!color) {
 		return res.send(403, 'Game already in progress');
 	}
@@ -58,7 +58,12 @@ io.sockets.on('connection', function (socket) {
         hexGame.start();
 		io.sockets.emit('gameStatus', hexGame.gameStatus());
     }
-
+    function resetGame() {
+        playerTokens = _.transform(playerTokens, function(result, value, key) { result[key] = undefined; });
+        playersConnected = _.transform(playersConnected, function(result, value, key) { result[key] = false; });
+        hexGame = new game.HexGame(); //Reset game
+        io.sockets.emit('gameStatus', hexGame.gameStatus());
+    }
     socket.on('moveRequest', function (moveRequest) {
         if ((!playersConnected['red'] || !playersConnected['blue']) || 
         	(!_.some(playerTokens, function(d) { return d === moveRequest.token; }))) {
@@ -79,12 +84,12 @@ io.sockets.on('connection', function (socket) {
     }).on('logout', function(logoutRequest) {
     	var color = _.findKey(playerTokens, function(d) { return d === logoutRequest.token; });
         if (color) {
-            console.log("notification: --------------------------- " + color, 'disconnected, reseting game');
-            playerTokens = _.transform(playerTokens, function(result, value, key) { result[key] = undefined; });
-            playersConnected = _.transform(playersConnected, function(result, value, key) { result[key] = false; });
-            hexGame = new game.HexGame(); //Reset game
-			io.sockets.emit('gameStatus', hexGame.gameStatus());
+            console.log("notification: --------------------------- " + color, 'logged out, resetting game');
+            resetGame();
         }
+    }).on('disconnect', function(){
+        console.log("notification: --------------------------- " + side + " disconnected, resetting game");
+        resetGame();
     });
 });
 
