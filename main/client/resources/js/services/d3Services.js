@@ -108,6 +108,15 @@ angular.module('hexGame.d3AngularServices', [])
                 (boardConfiguration.cellsRowWidth * 2 - 1) * boardConfiguration.cellHeight * 0.75
         };
 
+        this.getMaxWidth = function() {
+            return boardConfiguration.boardLeftMargin * 2 +
+                (boardConfiguration.cellsRowWidth * boardConfiguration.cellWidth);
+        };
+
+        this.getMaxHeight = function() {
+            return thisService.getBottomOfBottomCellRow() + boardConfiguration.boardTopMargin;
+        };
+
         this.getCellXValue = function(cell) {
             return cell.x;
         };
