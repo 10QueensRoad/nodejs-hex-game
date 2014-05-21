@@ -123,6 +123,16 @@ angular.module('hexGame.controllers', [])
             return currentGameStatus.substring(0, currentGameStatus.length - "Turn".length)
             	== $scope.side;
         };
+
+        $scope.showGameScreen = function() {
+            $scope.aboutScreenSelected = false;
+            $scope.gameScreenSelected = true;
+        };
+
+        $scope.showAboutScreen = function() {
+            $scope.aboutScreenSelected = true;
+            $scope.gameScreenSelected = false;
+        };
         
         //Data management functions
         var addPawn = function(pawn) {
@@ -169,4 +179,6 @@ angular.module('hexGame.controllers', [])
                 });
             }, d3TransitionsService.boardFadeOutAnimationTotalDuration());
         };
+
+        $scope.gameScreenSelected = true;
     });

@@ -144,7 +144,7 @@ angular.module('hexGame.directives.boardDirective', [])
                         boardConfiguration.animations.boardTitle,
                         function() { return d3TransitionsService.boardCellsAnimationTotalDuration(); });
                 };
-                
+
                 /* Winning path drawing function */
                 var drawWinningPath = function() {
                     var winningTextData = [];
