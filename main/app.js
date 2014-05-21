@@ -79,11 +79,11 @@ io.sockets.on('connection', function (socket) {
     }).on('logout', function(logoutRequest) {
     	var color = _.findKey(playerTokens, function(d) { return d === logoutRequest.token; });
         if (color) {
-            playerTokens[color] = undefined;
-            playersConnected[color] = false;
-            //TODO: hexGame.reset();
+            console.log("notification: --------------------------- " + color, 'disconnected, reseting game');
+            playerTokens = _.transform(playerTokens, function(result, value, key) { result[key] = undefined; });
+            playersConnected = _.transform(playersConnected, function(result, value, key) { result[key] = false; });
+            hexGame = new game.HexGame(); //Reset game
 			io.sockets.emit('gameStatus', hexGame.gameStatus());
-            console.log("notification: --------------------------- " + color, 'disconnected');
         }
     });
 });

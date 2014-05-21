@@ -24,7 +24,12 @@ angular.module('hexGame.controllers', [])
                     addPawn(serverResponse.move);
                     addWinningPath(serverResponse.winningPath);
                     console.log('currentStatus is',JSON.stringify(serverResponse.currentStatus));
+                    var previousStatus = currentGameStatus;
                     currentGameStatus = serverResponse.currentStatus;
+                    if (previousStatus != 'waitingForPlayers'
+                        && currentGameStatus == 'waitingForPlayers') {
+                        gameReset();
+                    }
                     //TODO: handle game reset (with possibly auto-join as viewer)
                 } else {
                     $scope.hasError = true;
@@ -95,17 +100,7 @@ angular.module('hexGame.controllers', [])
             if ($scope.isPlayer()) {
                 serverConnection.emitEvent('logout');
             }
-            $scope.cells.length = 0;
-            $scope.boardTitle.length = 0;
-            $scope.pawns.length = 0;
-            $scope.winningPath.length = 0;
-            _.delay(function() {
-                $scope.$apply(function() {
-                    $scope.side = undefined;
-                    movesToDisplayWhenLoginAsViewer = undefined;
-        			winningPathToDisplayWhenLoginAsViewer = undefined;
-                });
-            }, d3TransitionsService.boardFadeOutAnimationTotalDuration());
+            gameReset();
         };
 
         var strEndsWith = function(str, suffix) {
@@ -158,5 +153,20 @@ angular.module('hexGame.controllers', [])
         		&& $scope.boardTitle.length == 0) {
                 $scope.boardTitle.push.apply($scope.boardTitle, gameStaticData.boardTitle);
             }
+        };
+
+        /* Transitions function */
+        var gameReset = function() {
+            $scope.cells.length = 0;
+            $scope.boardTitle.length = 0;
+            $scope.pawns.length = 0;
+            $scope.winningPath.length = 0;
+            _.delay(function() {
+                $scope.$apply(function() {
+                    $scope.side = undefined;
+                    movesToDisplayWhenLoginAsViewer = undefined;
+                    winningPathToDisplayWhenLoginAsViewer = undefined;
+                });
+            }, d3TransitionsService.boardFadeOutAnimationTotalDuration());
         };
     });
