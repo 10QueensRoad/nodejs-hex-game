@@ -3,7 +3,7 @@
 /**** Angular controllers ****/
 
 angular.module('hexGame.controllers', [])
-    .controller('HexController', function($scope, boardConfiguration, gameStaticData, serverCommunicationService, d3TransitionsService) {
+    .controller('HexController', function($scope, boardConfiguration, gameStaticData, serverCommunicationService, d3TransitionsService, $window) {
         $scope.side = undefined;
         $scope.hasError = false;
         var errorSide = undefined;
@@ -69,6 +69,10 @@ angular.module('hexGame.controllers', [])
                 currentGameStatus = serverResponse.gameStatus.currentStatus;
                 addCells();
                 addBoardLetters();
+                // TODO: extract as a service?
+                $window.onbeforeunload = function(e) {
+                    return 'Reloading this page will reset the game. Are you sure you want to reload this page?';
+                };
             }, function(error) {
             	//TODO: display error message (game must already be in progress)
             });
