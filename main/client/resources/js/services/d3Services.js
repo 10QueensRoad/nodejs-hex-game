@@ -237,7 +237,7 @@ angular.module('hexGame.d3AngularServices', [])
             }
         };
 
-        this.fadeOut = function(d3Element, animate, delayFn) {
+        this.fadeOutAndRemove = function(d3Element, animate, delayFn) {
             if (animate) {
                 return d3Element
                     .attr('opacity', 1)
@@ -282,4 +282,24 @@ angular.module('hexGame.d3AngularServices', [])
     			        .attr("stroke-dashoffset", 0);
     		}
         };
+
+        this.moveUpAndChangeColor = function(d3Element, animate, delayFn, finalColor) {
+            if (animate) {
+                return d3Element
+                    .attr('xlink:href', '#' + boardConfiguration.cellSymbolId)
+                    .attr('x', d3CoordinatesService.getCellXCoordinate)
+                    .attr('y', d3CoordinatesService.getCellYCoordinate)
+                    .transition()
+                    .attr('y', function(d) {
+                        return d3CoordinatesService.getCellYCoordinate(d) - boardConfiguration.cellHeight; })
+                    .style('fill', finalColor)
+                    .duration(boardConfiguration.animations.longDuration)
+                    .delay(delayFn);
+            } else {
+                return d3Element
+                    .attr('xlink:href', '#' + boardConfiguration.cellSymbolId)
+                    .attr('x', d3CoordinatesService.getCellXCoordinate)
+                    .attr('y', d3CoordinatesService.getCellYCoordinate);
+            }
+        }
     });

@@ -29,11 +29,12 @@ angular.module('hexGame.directives.boardDirective', [])
                 //Append cell symbol, for re-use
                 d3ComponentFactoryService.appendCellSymbol(svg, boardConfiguration.cellSymbolId);
 
-                //Append SVG groups
+                //Append SVG groups (warning: order is important)
                 var cellsGroup = svg.append("g").attr("id", "cellsGroup");
                 var pawnsGroup = svg.append("g").attr("id", "pawnsGroup");
                 var bordersGroup = svg.append("g").attr("id", "bordersGroup");
                 var boardTitleGroup = svg.append("g").attr("id", "boardTitleGroup");
+                var winningPawnsGroup = svg.append("g").attr("id", "winningPawnsGroup");
                 var winningPathGroup = svg.append("g").attr("id", "winningPathGroup");
 
                 //Add border polylines
@@ -68,9 +69,9 @@ angular.module('hexGame.directives.boardDirective', [])
                 });
 
                 /* Pawns drawing functions */
-                var pawnsDelayFunction = function(wayIn) {
+                var pawnsDelayFunction = function(wayIn, currentElementsCount, previousElementsCount) {
                     return function(d, i) {
-                        return (wayIn ? (i - previousPawnsCount) : (scope.pawns.length - previousPawnsCount))
+                        return (wayIn ? (i - previousElementsCount) : (currentElementsCount - previousElementsCount))
                                 * boardConfiguration.animations.singleElementDelay;
                     }
                 };
@@ -85,11 +86,11 @@ angular.module('hexGame.directives.boardDirective', [])
                             return 'pawn ' + d.color + 'Pawn';
                         }),
                         boardConfiguration.animations.pawns,
-                        pawnsDelayFunction(true)).ease('bounce');
+                        pawnsDelayFunction(true, scope.pawns.length, previousPawnsCount)).ease('bounce');
                     //Remove deleted pawns
                     d3TransitionsService.fadeOutMoveUpAndRemove(pawns.exit(),
                         boardConfiguration.animations.pawns,
-                        pawnsDelayFunction(false));
+                        pawnsDelayFunction(false, scope.pawns.length, previousPawnsCount));
                     previousPawnsCount = scope.pawns.length;
                 };
 
@@ -139,7 +140,7 @@ angular.module('hexGame.directives.boardDirective', [])
                         function() { return d3TransitionsService.boardCellsAnimationTotalDuration(); })
                         .text( function (d) { return d; });
                     //Remove deleted letters
-                    d3TransitionsService.fadeOut(boardTitleLetters.exit(),
+                    d3TransitionsService.fadeOutAndRemove(boardTitleLetters.exit(),
                         boardConfiguration.animations.boardTitle,
                         function() { return d3TransitionsService.boardCellsAnimationTotalDuration(); });
                 };
@@ -152,11 +153,16 @@ angular.module('hexGame.directives.boardDirective', [])
                         winningText = winningText.charAt(0).toUpperCase() + winningText.slice(1) + " won the game!!!";
                         winningTextData.push(winningText);
                     }
-                    var winningPathSegments = winningPathGroup.selectAll(".winningPathSegments")
+                    /* TODO put back when server-side logic can determine shortest winning path
+                     var winningPathSegments = winningPathGroup.selectAll(".winningPathSegments")
                         .data(scope.winningPath);
-                    var winningMessage = winningPathGroup.selectAll(".winningMessageText")
+                    */
+                    var winningMessage = winningPathGroup.selectAll(".winningMessage")
                         .data(winningTextData);
+                    var winningPawns = winningPawnsGroup.selectAll(".winningPawn")
+                        .data(scope.winningPath);
                     //Add new segments
+                    /* TODO put back when server-side logic can determine shortest winning path
                     var line = d3.svg.line()
       					.interpolate("linear")
                         .x(d3CoordinatesService.getCellMiddleXCoordinate)
@@ -167,6 +173,7 @@ angular.module('hexGame.directives.boardDirective', [])
                         .attr('class', 'winningPath'),
                         boardConfiguration.animations.winningPath,
                         function() { return boardConfiguration.animations.shortDuration; });
+                     */
                     //Add winning message
                     d3TransitionsService.fadeIn(winningMessage.enter()
                             .append('text')
@@ -176,14 +183,30 @@ angular.module('hexGame.directives.boardDirective', [])
                             .text(function (d) { return d; }),
                         boardConfiguration.animations.winningMessage,
                         function() { return boardConfiguration.animations.veryLongDuration; });
+                    //Add winning pawns
+                    d3TransitionsService.moveUpAndChangeColor(winningPawns
+                        .enter()
+                        .append('use')
+                        .attr('class', function (d) {
+                            return 'pawn ' + d.color + 'Pawn winningPawn';
+                        }),
+                        boardConfiguration.animations.pawns,
+                        pawnsDelayFunction(true, scope.winningPath.length, 0), 'yellow');
                     //Remove deleted segments
-                    d3TransitionsService.fadeOut(winningPathSegments.exit(),
+                    /* TODO put back when server-side logic can determine shortest winning path
+                    d3TransitionsService.fadeOutAndRemove(winningPathSegments.exit(),
                         boardConfiguration.animations.winningPath,
                         function() { return boardConfiguration.animations.shortDuration; });
+                    */
                     //Remove winning message
-                    d3TransitionsService.fadeOut(winningMessage.exit(),
+                    //TODO this doesn't work, fix it
+                    d3TransitionsService.fadeOutAndRemove(winningMessage.exit(),
                         boardConfiguration.animations.winningMessage,
                         function() { return boardConfiguration.animations.shortDuration; });
+                    //Remove deleted winning pawns
+                    d3TransitionsService.fadeOutMoveUpAndRemove(winningPawns.exit(),
+                        boardConfiguration.animations.pawns,
+                        pawnsDelayFunction(false, scope.winningPath.length, 0));
                 };
             }
         }

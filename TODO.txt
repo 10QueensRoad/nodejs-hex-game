@@ -1,19 +1,21 @@
 = Client-server communications
-    - MUST: Game reset on player disconnect
+    - MUST PX: Game reset on player disconnect
+        - (or) MUST use a timer for disconnects
     - SHOULD: Put token in session
 
 = Game logic
-	- MUST: Should catch thrown exceptions and recover from them, instead of quitting the app
-	- SHOULD: Count game statistics
-    - NICE: Return shortest winning path
+	- MUST AJH: Should catch thrown exceptions and recover from them, instead of quitting the app
+	- SHOULD AJH: Count game statistics
+    - NICE AJH: Return shortest winning path
     - NICE: Multiple simultaneous games
 
 = Game display
-    - MUST: Replace winning path animation by cells "illumination", until Game logic can return shortest winning path
-    - MUST: Re-ask for full game status when re-joining as viewer
+    - MUST ADU: Re-ask for full game status when re-joining as viewer
+    - MUST ADU: Remove winning message text on game reset
     - MUST: Add "projector" view with QR code (and auto-join as viewer)
-    - SHOULD: Add "about" dialog (presenting Bombora, the technical stack and possibly the game statistics)
-    - SHOULD: Adapt CSS/SVG to all screen sizes
+    - SHOULD TT: Add "about" dialog (presenting Bombora, the technical stack and possibly the game statistics)
+    - SHOULD AJH: Adapt CSS/SVG to all screen sizes
+    - SHOULD ADU: Draw a rectangle behind winning message
     - NICE: Enable/Disable animations based on user-agent
     - NICE: Sounds?
     
@@ -21,8 +23,3 @@
 	- SHOULD: Extend Jasmine/Angular-mock test coverage (using Karma and Istanbul?)
 	- SHOULD: Improve server-side and client-side error handling
 	- NICE: Logging
-
-= Notes for winning move calculation
-    - The game will never tie. You can only lose if your opponent has won, it is not possible to deadlock.
-    - Other HexGame implementations highlight the entire path. If the winning path forks and joins, it is still part of the winning path, so highlight it all.
-    - The winning move must involve the most recent move. So use that as a starting point for path-finding.
