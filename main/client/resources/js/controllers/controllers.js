@@ -13,16 +13,19 @@ angular.module('hexGame.controllers', [])
         $scope.pawns = [];
         $scope.boardTitle = [];
         $scope.winningPath = [];
-        var movesToDisplayWhenLoginAsViewer = undefined;
-        var winningPathToDisplayWhenLoginAsViewer = undefined;
+        var movesToDisplayWhenLoginAsViewer = [];
+        var winningPathToDisplayWhenLoginAsViewer = [];
 
         //Server events handlers
         var handleGameStatusUpdate = function(serverResponse) {
             $scope.$apply(function() {
                 if (!serverResponse.isError) {
                     $scope.hasError = false;
-                    addPawn(serverResponse.move);
-                    addWinningPath(serverResponse.winningPath);
+                    addPawnToArray(angular.isDefined($scope.side) ? $scope.pawns : movesToDisplayWhenLoginAsViewer,
+                        serverResponse.move);
+                    addWinningPathToArray(
+                        angular.isDefined($scope.side) ? $scope.winningPath : winningPathToDisplayWhenLoginAsViewer,
+                        serverResponse.winningPath);
                     console.log('currentStatus is',JSON.stringify(serverResponse.currentStatus));
                     var previousStatus = currentGameStatus;
                     currentGameStatus = serverResponse.currentStatus;
@@ -43,8 +46,8 @@ angular.module('hexGame.controllers', [])
             [['gameStatus', handleGameStatusUpdate]],
             function(serverResponse) {
                 currentGameStatus = serverResponse.fullStatus.currentStatus;
-                movesToDisplayWhenLoginAsViewer = serverResponse.fullStatus.moves;
-                winningPathToDisplayWhenLoginAsViewer =serverResponse.fullStatus.winningPath;
+                movesToDisplayWhenLoginAsViewer = (serverResponse.fullStatus.moves || []);
+                winningPathToDisplayWhenLoginAsViewer = (serverResponse.fullStatus.winningPath || []);
             },
             function() {
                 $scope.hasError = true;
@@ -86,8 +89,8 @@ angular.module('hexGame.controllers', [])
         	$scope.side = 'viewer';
         	addCells();
             addBoardLetters();
-            addPawns(movesToDisplayWhenLoginAsViewer); //TODO request current state to server if this is missing
-        	addWinningPath(winningPathToDisplayWhenLoginAsViewer); //TODO same
+            addPawns(movesToDisplayWhenLoginAsViewer);
+            addWinningPathToArray($scope.winningPath, winningPathToDisplayWhenLoginAsViewer);
         };
         
         $scope.isViewer = function() {
@@ -139,21 +142,21 @@ angular.module('hexGame.controllers', [])
         };
         
         //Data management functions
-        var addPawn = function(pawn) {
+        var addPawnToArray = function(pawnsArray, pawn) {
         	if (angular.isObject(pawn)
-        		&& _.where($scope.pawns, pawn).length == 0) {
-        		$scope.pawns.push(pawn);
+        		&& _.where(pawnsArray, pawn).length == 0) {
+                pawnsArray.push(pawn);
         	}
         };
         var addPawns = function(pawns) {
         	if (angular.isArray(pawns)) {
-        		_.forEach(pawns, function(pawn) { addPawn(pawn); });
+        		_.forEach(pawns, function(pawn) { addPawnToArray($scope.pawns, pawn); });
         	}
         };
-        var addWinningPath = function(winningPath) {
-        	if (angular.isArray(winningPath) && $scope.winningPath.length == 0) {
+        var addWinningPathToArray = function(winninPathArray, winningPath) {
+        	if (angular.isArray(winningPath) && winninPathArray.length == 0) {
                 console.log('winningPath is', JSON.stringify(winningPath));
-                $scope.winningPath.push.apply($scope.winningPath, winningPath);
+                winninPathArray.push.apply(winninPathArray, winningPath);
             }
         };
         var addCells = function() {
@@ -173,13 +176,26 @@ angular.module('hexGame.controllers', [])
         var gameReset = function() {
             $scope.cells.length = 0;
             $scope.boardTitle.length = 0;
+            if ($scope.isViewer() && currentGameStatus != 'waitingForPlayers') {
+                //If game is in progress, keep the pawns and winning path to redraw them when rejoining as viewer
+                movesToDisplayWhenLoginAsViewer.length = 0;
+                if ($scope.pawns.length > 0) {
+                    movesToDisplayWhenLoginAsViewer.push.apply(movesToDisplayWhenLoginAsViewer, $scope.pawns);
+                }
+                winningPathToDisplayWhenLoginAsViewer.length = 0;
+                if ($scope.winningPath.length > 0) {
+                    winningPathToDisplayWhenLoginAsViewer.push.apply(
+                        winningPathToDisplayWhenLoginAsViewer, $scope.winningPath);
+                }
+            } else {
+                movesToDisplayWhenLoginAsViewer.length = 0;
+                winningPathToDisplayWhenLoginAsViewer.length = 0;
+            }
             $scope.pawns.length = 0;
             $scope.winningPath.length = 0;
             _.delay(function() {
                 $scope.$apply(function() {
                     $scope.side = undefined;
-                    movesToDisplayWhenLoginAsViewer = undefined;
-                    winningPathToDisplayWhenLoginAsViewer = undefined;
                 });
             }, d3TransitionsService.boardFadeOutAnimationTotalDuration());
         };

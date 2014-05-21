@@ -10,8 +10,6 @@
     - NICE: Multiple simultaneous games
 
 = Game display
-    - MUST ADU: Re-ask for full game status when re-joining as viewer
-    - MUST ADU: Remove winning message text on game reset
     - MUST: Add "projector" view with QR code (and auto-join as viewer)
     - SHOULD TT: Add "about" dialog (presenting Bombora, the technical stack and possibly the game statistics)
     - SHOULD AJH: Adapt CSS/SVG to all screen sizes

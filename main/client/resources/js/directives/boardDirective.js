@@ -148,10 +148,12 @@ angular.module('hexGame.directives.boardDirective', [])
                 /* Winning path drawing function */
                 var drawWinningPath = function() {
                     var winningTextData = [];
-                    var winningText = scope.getWinningSide();
-                    if (angular.isDefined(winningText)) {
-                        winningText = winningText.charAt(0).toUpperCase() + winningText.slice(1) + " won the game!!!";
-                        winningTextData.push(winningText);
+                    if (scope.winningPath.length > 0) {
+                        var winningText = scope.getWinningSide();
+                        if (angular.isDefined(winningText)) {
+                            winningText = winningText.charAt(0).toUpperCase() + winningText.slice(1) + " won the game!!!";
+                            winningTextData.push(winningText);
+                        }
                     }
                     /* TODO put back when server-side logic can determine shortest winning path
                      var winningPathSegments = winningPathGroup.selectAll(".winningPathSegments")
