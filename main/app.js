@@ -7,11 +7,14 @@ _ = require('./client/resources/js/lib/lodash-2.4.1');
 
 var express = require('express')
     , app = express()
+    , favicon = require('serve-favicon')
     , server = require('http').createServer(app)
     , jwt = require('jsonwebtoken')
     , game = require('./server/js/game')
     , socketioJwt = require('socketio-jwt')
     , io = require('socket.io').listen(server, { log: false });
+
+app.use(favicon(__dirname + "/client/resources/images/favicon.ico"));
 
 var hexGame = new game.HexGame();
 

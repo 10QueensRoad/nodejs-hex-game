@@ -26,9 +26,18 @@
 </div>
 <nav class="navbar navbar-default" role="navigation" ng-show="side">
     <div class="container-fluid">
-        <div class="collapse navbar-collapse">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#hex-game-menu">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="#">HEX GAME</a>
+        </div>
+        <div class="collapse navbar-collapse" id="hex-game-menu">
             <ul class="nav navbar-nav">
-                <li ng-class="{active: gameScreenSelected}" ng-click="showGameScreen()"><a href="#">Game</a></li>
+                <li ng-class="{active: gameScreenSelected}" ng-click="showGameScreen()"><a href="#">Play</a></li>
                 <li ng-class="{active: aboutScreenSelected}"><a href="#" ng-click="showAboutScreen()">About</a></li>
             </ul>
         </div>
@@ -42,7 +51,7 @@
             <div class="gameControlsSide">You are the <span
                     ng-class="{redSide: side == 'red', blueSide: side =='blue'}">{{side}}</span> player
             </div>
-            <div class="gameControlsTurn" ng-show="isPlayerTurn()">It is your turn!</div>
+            <div class="gapp.use(express.favicon("public/images/favicon.ico")); ameControlsTurn" ng-show="isPlayerTurn()">It is your turn!</div>
             <div class="gameControlsInstructions">Connect the two borders<br/>of your colour<br/>to win the game!</div>
         </div>
         <div ng-show="isViewer()">
@@ -59,7 +68,7 @@
             <div class="panel-heading">
                 <h4 class="panel-title">
                     <a data-toggle="collapse" data-parent="#accordion" href="#collapseHexGame">
-                        HEXGAME
+                        Stuff we built on
                     </a>
                 </h4>
             </div>
