@@ -59,6 +59,8 @@
 .gameControls {
     font-family: AlrightSansMedium,"Helvetica Neue",Helvetica,Arial,sans-serif;
     float: left;
+    margin-top: 30px;
+    margin-left: 5px;
 }
 
 .gameControlsLogo {
@@ -156,4 +158,11 @@
 
 .clickable svg g#cellsGroup use.boardCell:hover {
 	cursor: pointer;
+}
+
+.projectorView {
+	position: absolute;
+	bottom: 30px;
+	font-size: 22px;
+    text-align: center;
 }

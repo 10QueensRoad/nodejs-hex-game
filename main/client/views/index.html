@@ -39,7 +39,7 @@
             <ul class="nav navbar-nav">
                 <li ng-class="{active: gameScreenSelected}" ng-click="showGameScreen()"><a href="#">Play</a></li>
                 <li ng-class="{active: aboutScreenSelected}"><a href="#" ng-click="showAboutScreen()">About</a></li>
-                <li ng-click="logout()"><a href="#">Quit</a></li>
+                <li ng-show="!isProjectorView()" ng-click="logout()"><a href="#">Quit</a></li>
             </ul>
         </div>
     </div>
@@ -54,13 +54,16 @@
             <div class="gameControlsInstructions">Connect the two borders<br/>of your colour<br/>to win the game!</div>
         </div>
         <div ng-show="isViewer()">
-            <div class="gameControlsSide">You're a viewer</div>
+            <div class="gameControlsSide" ng-show="!isProjectorView()">You're a viewer</div>
             <div class="gameControlsSide" ng-show="getTurnSide()"><span
                     ng-class="{redSide: getTurnSide() == 'red', blueSide: getTurnSide() =='blue'}">{{getTurnText()}}</span> player's turn</div>
         </div>
         <div ng-show="isWaitingForPlayers()">
             <div class="gameControlsWaiting">Waiting for players...</div>
         </div>
+    	<div class="projectorView" ng-show="isViewer() && isProjectorView()">
+    		Scan this QR code<br />and join the fun!<br /><img src="resources/images/qrCode.png" />
+    	</div>
     </div>
 </div>
 <div ng-show="aboutScreenSelected">
@@ -69,7 +72,7 @@
             <div class="panel-heading">
                 <h4 class="panel-title">
                     <a data-toggle="collapse" data-parent="#accordion" href="#collapseHexGame">
-                        Stuff we built on
+                        Technical stack
                     </a>
                 </h4>
             </div>
