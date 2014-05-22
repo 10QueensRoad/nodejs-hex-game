@@ -95,6 +95,8 @@
 
 .boardDiv {
     float: left;
+    background: url("../images/logo.png") no-repeat center;
+    background-size: 283px 193px;
 }
 
 .boardCellSymbol {

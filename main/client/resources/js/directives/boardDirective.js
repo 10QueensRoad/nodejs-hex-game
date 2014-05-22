@@ -23,7 +23,8 @@ angular.module('hexGame.directives.boardDirective', [])
                 var svg = d3.select(element[0])
                     .append('svg')
                         .style('width', d3CoordinatesService.getMaxWidth() + 'px')
-                        .style('height', d3CoordinatesService.getMaxHeight() + 'px');
+                        .style('height', d3CoordinatesService.getMaxHeight() + 'px')
+                        .style('opacity', '0.8');
                 var previousPawnsCount = 0;
 
                 //Append cell symbol, for re-use

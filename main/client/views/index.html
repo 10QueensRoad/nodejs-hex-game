@@ -46,7 +46,6 @@
 <div ng-show="side && gameScreenSelected">
     <board-directive></board-directive>
     <div class="gameControls">
-        <div class="gameControlsLogo"><img src="resources/images/logo.png"/></div>
         <div ng-show="isPlayer()">
             <div class="gameControlsSide">You are the <span
                     ng-class="{redSide: side == 'red', blueSide: side =='blue'}">{{side}}</span> player
