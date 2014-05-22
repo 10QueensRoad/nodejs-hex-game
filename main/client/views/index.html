@@ -20,67 +20,71 @@
     <link rel="stylesheet" href="resources/css/bootstrap.min.css">
 
 <body ng-app="hexGame" ng-controller="HexController">
-    <div class="welcomeScreen" ng-show="!side">
-        <div class="welcomeScreenJoin" ng-show="canJoinAsPlayer()" ng-click="loginAsPlayer()">Join the game</div>
-        <div class="welcomeScreenView" ng-click="loginAsViewer()">View the game</div>
-    </div>
-    <nav class="navbar navbar-default" role="navigation" ng-show="side">
-        <div class="container-fluid">
-            <div class="collapse navbar-collapse">
-                <ul class="nav navbar-nav">
-                    <li ng-class="{active: gameScreenSelected}" ng-click="showGameScreen()"><a href="#">Game</a></li>
-                    <li ng-class="{active: aboutScreenSelected}"><a href="#" ng-click="showAboutScreen()">About</a></li>
-                </ul>
-            </div>
-        </div>
-    </nav>
-    <div ng-show="side && gameScreenSelected">
-        <board-directive></board-directive>
-        <div class="gameControls">
-            <div class="gameControlsLogo"><img src="resources/images/logo.png" /></div>
-            <div ng-show="isPlayer()">
-                <div class="gameControlsSide">You are the <span ng-class="{redSide: side == 'red', blueSide: side =='blue'}">{{side}}</span> player</div>
-                <div class="gameControlsTurn" ng-show="isPlayerTurn()">It is your turn!</div>
-                <div class="gameControlsInstructions">Connect the two borders<br />of your colour<br />to win the game!</div>
-            </div>
-            <div ng-show="isViewer()">
-                <div class="gameControlsSide">You are a viewer</div>
-            </div>
-            <div class="gameControlsLogout"><button id="logout-action" class="btn btn-primary" ng-click="logout()">Quit</button></div>
+<div class="welcomeScreen center-block" ng-show="!side">
+    <span class="welcomeScreenJoin" ng-show="canJoinAsPlayer()" ng-click="loginAsPlayer()">Join the game</span>
+    <span class="welcomeScreenView" ng-click="loginAsViewer()">View the game</span>
+</div>
+<nav class="navbar navbar-default" role="navigation" ng-show="side">
+    <div class="container-fluid">
+        <div class="collapse navbar-collapse">
+            <ul class="nav navbar-nav">
+                <li ng-class="{active: gameScreenSelected}" ng-click="showGameScreen()"><a href="#">Game</a></li>
+                <li ng-class="{active: aboutScreenSelected}"><a href="#" ng-click="showAboutScreen()">About</a></li>
+            </ul>
         </div>
     </div>
-    <div ng-show="aboutScreenSelected">
-        <div class="panel-group" id="accordion">
-            <div class="panel panel-default">
-                <div class="panel-heading">
-                    <h4 class="panel-title">
-                        <a data-toggle="collapse" data-parent="#accordion" href="#collapseHexGame">
-                            HEXGAME
-                        </a>
-                    </h4>
-                </div>
-                <div id="collapseHexGame" class="panel-collapse collapse in">
-                    <div class="panel-body">
-                        The info about the game goes here
-                    </div>
-                </div>
+</nav>
+<div ng-show="side && gameScreenSelected">
+    <board-directive></board-directive>
+    <div class="gameControls">
+        <div class="gameControlsLogo"><img src="resources/images/logo.png"/></div>
+        <div ng-show="isPlayer()">
+            <div class="gameControlsSide">You are the <span
+                    ng-class="{redSide: side == 'red', blueSide: side =='blue'}">{{side}}</span> player
             </div>
-            <div class="panel panel-default">
-                <div class="panel-heading">
-                    <h4 class="panel-title">
-                        <a data-toggle="collapse" data-parent="#accordion" href="#collapseCompany">
-                            Bombora Technologies
-                        </a>
-                    </h4>
-                </div>
-                <div id="collapseCompany" class="panel-collapse collapse">
-                    <div class="panel-body">
-                        More information about the company
-                    </div>
+            <div class="gameControlsTurn" ng-show="isPlayerTurn()">It is your turn!</div>
+            <div class="gameControlsInstructions">Connect the two borders<br/>of your colour<br/>to win the game!</div>
+        </div>
+        <div ng-show="isViewer()">
+            <div class="gameControlsSide">You are a viewer</div>
+        </div>
+        <div class="gameControlsLogout">
+            <button id="logout-action" class="btn btn-primary" ng-click="logout()">Quit</button>
+        </div>
+    </div>
+</div>
+<div ng-show="aboutScreenSelected">
+    <div class="panel-group" id="accordion">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h4 class="panel-title">
+                    <a data-toggle="collapse" data-parent="#accordion" href="#collapseHexGame">
+                        HEXGAME
+                    </a>
+                </h4>
+            </div>
+            <div id="collapseHexGame" class="panel-collapse collapse in">
+                <div class="panel-body">
+                    The info about the game goes here
                 </div>
             </div>
         </div>
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h4 class="panel-title">
+                    <a data-toggle="collapse" data-parent="#accordion" href="#collapseCompany">
+                        Bombora Technologies
+                    </a>
+                </h4>
+            </div>
+            <div id="collapseCompany" class="panel-collapse collapse">
+                <div class="panel-body">
+                    More information about the company
+                </div>
+            </div>
+        </div>
     </div>
+</div>
 <script src="/socket.io/socket.io.js"></script>
 </body>
 </html>

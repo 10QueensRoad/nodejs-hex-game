@@ -22,21 +22,19 @@
 }
 
 .welcomeScreen {
-    background-image: url("../images/gameBackground.png");
-    background-repeat: no-repeat;
-    width: 100%;
+    background: url("../images/gameBackground.png") no-repeat center top;
+    width: 584px;
     height: 600px;
 }
 
 .welcomeScreenJoin {
+    display: inline-block;
     font-family: AlrightSansMedium,"Helvetica Neue",Helvetica,Arial,sans-serif;
     font-size: 28px;
     color: white;
-    position: relative;
-    float: left;
-    left: 1%;
-    top: 30%;
-    width: 10%;
+    padding-top: 180px;
+    width: 230px;
+    text-align: center;
 }
 
 .welcomeScreenJoin:hover {
@@ -44,14 +42,14 @@
 }
 
 .welcomeScreenView {
+    display: inline-block;
     font-family: AlrightSansMedium,"Helvetica Neue",Helvetica,Arial,sans-serif;
     font-size: 28px;
     color: white;
-    position: relative;
-    float: left;
-    left: 9.5%;
-    top: 30%;
-    width: 15%;
+    margin-left:116px;
+    padding-top: 180px;
+    width: 230px;
+    text-align: center;
 }
 
 .welcomeScreenView:hover {
