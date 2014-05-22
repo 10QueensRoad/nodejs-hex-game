@@ -21,7 +21,8 @@ angular.module('hexGame.d3AngularServices', [])
             'shortDuration': 500,
             'veryLongDuration': 2000
         },
-        'cellSymbolId' : 'cellSymbol'
+        'cellSymbolId' : 'cellSymbol',
+        'winningPathColor': 'yellow'
     })
     /* Return the static data for the game */
     .factory('gameStaticData', function(boardConfiguration) {

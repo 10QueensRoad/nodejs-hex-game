@@ -16,7 +16,7 @@ angular.module('hexGame.directives.boardDirective', [])
     .directive('boardDirective', function(boardConfiguration, d3Service, d3ComponentFactoryService, d3CoordinatesService, d3TransitionsService) {
         return {
             restrict: 'E',
-            template: '<div class="boardDiv"></div>',
+            template: '<div class="boardDiv" ng-class="{clickable: isGameInProgress() && isPlayerTurn()}"></div>',
             replace: true,
             link: function(scope, element) {
                 var d3 = d3Service.d3;
@@ -42,28 +42,28 @@ angular.module('hexGame.directives.boardDirective', [])
                 d3ComponentFactoryService.appendBorders(bordersGroup);
 
                 //Draw pawns whenever needed
-                scope.$watchCollection('pawns', function(newValue) { //TODO: Can't d3 watch the data itself?
+                scope.$watchCollection('pawns', function(newValue) {
                     if (angular.isArray(newValue)) {
                         drawPawns();
                     }
                 });
 
                 //Draw cells whenever needed
-                scope.$watchCollection('cells', function(newValue) { //TODO: Can't d3 watch the data itself?
+                scope.$watchCollection('cells', function(newValue) {
                     if (angular.isArray(newValue)) {
                         drawCells();
                     }
                 });
 
                 //Draw board title whenever needed
-                scope.$watchCollection('boardTitle', function(newValue) { //TODO: Can't d3 watch the data itself?
+                scope.$watchCollection('boardTitle', function(newValue) {
                     if (angular.isArray(newValue)) {
                         drawBoardTitle();
                     }
                 });
 
                 //Draw winning path whenever needed
-                scope.$watchCollection('winningPath', function(newValue) { //TODO: Can't d3 watch the data itself?
+                scope.$watchCollection('winningPath', function(newValue) {
                     if (angular.isArray(newValue)) {
                         drawWinningPath();
                     }
@@ -150,9 +150,8 @@ angular.module('hexGame.directives.boardDirective', [])
                 var drawWinningPath = function() {
                     var winningTextData = [];
                     if (scope.winningPath.length > 0) {
-                        var winningText = scope.getWinningSide();
+                        var winningText = scope.getWinningText();
                         if (angular.isDefined(winningText)) {
-                            winningText = winningText.charAt(0).toUpperCase() + winningText.slice(1) + " won the game!!!";
                             winningTextData.push(winningText);
                         }
                     }
@@ -194,7 +193,8 @@ angular.module('hexGame.directives.boardDirective', [])
                             return 'pawn ' + d.color + 'Pawn winningPawn';
                         }),
                         boardConfiguration.animations.pawns,
-                        pawnsDelayFunction(true, scope.winningPath.length, 0), 'yellow');
+                        pawnsDelayFunction(true, scope.winningPath.length, 0),
+                        boardConfiguration.winningPathColor);
                     //Remove deleted segments
                     /* TODO put back when server-side logic can determine shortest winning path
                     d3TransitionsService.fadeOutAndRemove(winningPathSegments.exit(),
@@ -202,7 +202,6 @@ angular.module('hexGame.directives.boardDirective', [])
                         function() { return boardConfiguration.animations.shortDuration; });
                     */
                     //Remove winning message
-                    //TODO this doesn't work, fix it
                     d3TransitionsService.fadeOutAndRemove(winningMessage.exit(),
                         boardConfiguration.animations.winningMessage,
                         function() { return boardConfiguration.animations.shortDuration; });
@@ -213,4 +212,11 @@ angular.module('hexGame.directives.boardDirective', [])
                 };
             }
         }
-    });
+    })
+    .directive('ngVisible', function () {
+		return function (scope, element, attr) {
+			scope.$watch(attr.ngVisible, function (visible) {
+				element.css('visibility', visible ? 'visible' : 'hidden');
+			});
+		};
+	});

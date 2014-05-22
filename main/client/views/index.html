@@ -21,7 +21,7 @@
 
 <body ng-app="hexGame" ng-controller="HexController">
 <div class="welcomeScreen center-block" ng-show="!side">
-    <span class="welcomeScreenJoin" ng-show="canJoinAsPlayer()" ng-click="loginAsPlayer()">Join the game</span>
+    <span class="welcomeScreenJoin" ng-visible="canJoinAsPlayer()" ng-click="loginAsPlayer()">Join the game</span>
     <span class="welcomeScreenView" ng-click="loginAsViewer()">View the game</span>
 </div>
 <nav class="navbar navbar-default" role="navigation" ng-show="side">
@@ -39,6 +39,7 @@
             <ul class="nav navbar-nav">
                 <li ng-class="{active: gameScreenSelected}" ng-click="showGameScreen()"><a href="#">Play</a></li>
                 <li ng-class="{active: aboutScreenSelected}"><a href="#" ng-click="showAboutScreen()">About</a></li>
+                <li ng-click="logout()"><a href="#">Quit</a></li>
             </ul>
         </div>
     </div>
@@ -47,17 +48,18 @@
     <board-directive></board-directive>
     <div class="gameControls">
         <div ng-show="isPlayer()">
-            <div class="gameControlsSide">You are the <span
-                    ng-class="{redSide: side == 'red', blueSide: side =='blue'}">{{side}}</span> player
-            </div>
-            <div class="gapp.use(express.favicon("public/images/favicon.ico")); ameControlsTurn" ng-show="isPlayerTurn()">It is your turn!</div>
+            <div class="gameControlsSide">You're the <span
+                    ng-class="{redSide: side == 'red', blueSide: side =='blue'}">{{side}}</span> player</div>
+            <div class="gameControlsTurn" ng-show="isGameInProgress()">It's <span ng-show="!isPlayerTurn()">not</span> your turn!</div>
             <div class="gameControlsInstructions">Connect the two borders<br/>of your colour<br/>to win the game!</div>
         </div>
         <div ng-show="isViewer()">
-            <div class="gameControlsSide">You are a viewer</div>
+            <div class="gameControlsSide">You're a viewer</div>
+            <div class="gameControlsSide" ng-show="getTurnSide()"><span
+                    ng-class="{redSide: getTurnSide() == 'red', blueSide: getTurnSide() =='blue'}">{{getTurnText()}}</span> player's turn</div>
         </div>
-        <div class="gameControlsLogout">
-            <button id="logout-action" class="btn btn-primary" ng-click="logout()">Quit</button>
+        <div ng-show="isWaitingForPlayers()">
+            <div class="gameControlsWaiting">Waiting for players...</div>
         </div>
     </div>
 </div>

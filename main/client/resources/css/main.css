@@ -75,8 +75,8 @@
     text-align: center;
 }
 
-.gameControlsLogout {
-    margin-top: 10px;
+.gameControlsWaiting {
+	font-size: 22px;
     text-align: center;
 }
 
@@ -152,4 +152,8 @@
     fill: black;
     pointer-events: none;
     text-anchor: middle;
+}
+
+.clickable svg g#cellsGroup use.boardCell:hover {
+	cursor: pointer;
 }

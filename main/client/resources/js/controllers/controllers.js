@@ -30,7 +30,7 @@ angular.module('hexGame.controllers', [])
                     var previousStatus = currentGameStatus;
                     currentGameStatus = serverResponse.currentStatus;
                     if (previousStatus != 'waitingForPlayers'
-                        && currentGameStatus == 'waitingForPlayers') {
+                        && $scope.isWaitingForPlayers()) {
                         gameReset();
                     }
                     //TODO: handle game reset (with possibly auto-join as viewer)
@@ -58,9 +58,17 @@ angular.module('hexGame.controllers', [])
         $scope.showError = function() { //TODO: remove?
             return $scope.hasError && errorSide == $scope.side;
         };
+        
+        $scope.isWaitingForPlayers = function() {
+        	return currentGameStatus == 'waitingForPlayers';
+        };
+        
+        $scope.isGameInProgress = function() {
+            return angular.isDefined($scope.getTurnSide());
+        };
 
         $scope.canJoinAsPlayer = function() {
-            return currentGameStatus == 'waitingForPlayers' && !$scope.side;
+            return $scope.isWaitingForPlayers() && !$scope.side;
         };
 
         $scope.loginAsPlayer = function() {
@@ -114,21 +122,39 @@ angular.module('hexGame.controllers', [])
             if (!angular.isDefined(str) || !angular.isDefined(suffix)) return false;
             return str.indexOf(suffix, str.length - suffix.length) !== -1;
         };
+        
+        var capitalizeFirstLetter = function(value) {
+        	return (angular.isString(value) ?
+        		value.charAt(0).toUpperCase() + value.slice(1) : undefined);
+        };
 
-        $scope.getWinningSide = function() {
-            if (!angular.isDefined(currentGameStatus) || !strEndsWith(currentGameStatus, "Won")) {
+        var extractSideFromCurrentGameStatus = function(suffixToRemove) {
+            if (!angular.isDefined(currentGameStatus) || !strEndsWith(currentGameStatus, suffixToRemove)) {
                 return undefined;
             }
-            return currentGameStatus.substring(0, currentGameStatus.length - "Won".length);
+            return currentGameStatus.substring(0, currentGameStatus.length - suffixToRemove.length);
+        };
+        
+        $scope.getWinningSide = function() {
+        	return extractSideFromCurrentGameStatus("Won");
+        };
+        
+        $scope.getWinningText = function() {
+        	var winningText = capitalizeFirstLetter($scope.getWinningSide());
+            return (angular.isDefined(winningText) ?
+            	winningText + " won the game!!!" : undefined);
+        };
+        
+        $scope.getTurnSide = function() {
+        	return extractSideFromCurrentGameStatus("Turn");
+        };
+        
+        $scope.getTurnText = function() {
+        	return capitalizeFirstLetter($scope.getTurnSide());
         };
         
         $scope.isPlayerTurn = function() {
-        	if (!angular.isDefined(currentGameStatus) || !angular.isDefined($scope.side)
-        		|| !strEndsWith(currentGameStatus, "Turn")) {
-                return false;
-            }
-            return currentGameStatus.substring(0, currentGameStatus.length - "Turn".length)
-            	== $scope.side;
+            return $scope.getTurnSide() == $scope.side;
         };
 
         $scope.showGameScreen = function() {
@@ -176,7 +202,7 @@ angular.module('hexGame.controllers', [])
         var gameReset = function() {
             $scope.cells.length = 0;
             $scope.boardTitle.length = 0;
-            if ($scope.isViewer() && currentGameStatus != 'waitingForPlayers') {
+            if ($scope.isViewer() && !$scope.isWaitingForPlayers()) {
                 //If game is in progress, keep the pawns and winning path to redraw them when rejoining as viewer
                 movesToDisplayWhenLoginAsViewer.length = 0;
                 if ($scope.pawns.length > 0) {
