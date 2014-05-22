@@ -1,6 +1,4 @@
 = Client-server communications
-    - MUST PX: Game reset on player disconnect
-        - (or) MUST use a timer for disconnects
     - SHOULD: Put token in session
 
 = Game logic
