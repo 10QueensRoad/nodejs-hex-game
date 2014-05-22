@@ -1,5 +1,7 @@
 = Client-server communications
     - SHOULD: Put token in session
+    - NICE: Try to re-use same socketio connection with new token
+    - NICE: Include and validate viewer token in POST to /joinAsPlayer
 
 = Game logic
 	- MUST AJH: Should catch thrown exceptions and recover from them, instead of quitting the app
@@ -8,10 +10,13 @@
     - NICE: Multiple simultaneous games
 
 = Game display
-    - MUST: Add "projector" view with QR code (and auto-join as viewer)
+    - MUST ADU: Add "projector" view with QR code (and auto-join as viewer)
     - SHOULD TT: Add "about" dialog (presenting Bombora, the technical stack and possibly the game statistics)
-    - SHOULD AJH: Adapt CSS/SVG to all screen sizes
-    - SHOULD ADU: Draw a rectangle behind winning message
+    - SHOULD AJH: Adapt CSS/SVG to all screen sizes. Fix welcome screen CSS.
+    - SHOULD ADU: Draw a rectangle behind winning message. Style winning message.
+    - SHOULD ADU: Display whose turn it is for viewer view
+    - SHOULD ADU: Display "waiting for players" message
+    - NICE ADU: When previousPawnsCount > 1, delay wining path drawing
     - NICE: Enable/Disable animations based on user-agent
     - NICE: Sounds?
     
