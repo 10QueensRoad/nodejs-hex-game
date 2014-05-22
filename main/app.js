@@ -2,8 +2,17 @@ var jwtSecret = 'hex game secret private key';
 var response = {};
 var playersConnected = {};
 var playerTokens = {};
+var port = 3000;
 
 _ = require('./client/resources/js/lib/lodash-2.4.1');
+
+_(process.argv)
+	.map(function (arg) { return arg.indexOf('port=') == 0 ?
+			arg.substring('port='.length, arg.length) : undefined })
+	.filter(function(port) { return !_.isUndefined(port); })
+	.at([0])
+	.forEach(function(finalPort) { if (!_.isUndefined(finalPort)) port = finalPort; });
+console.log('port ', port);
 
 var express = require('express')
     , app = express()
@@ -96,4 +105,4 @@ io.sockets.on('connection', function (socket) {
     });
 });
 
-server.listen(3000);
+server.listen(port);
