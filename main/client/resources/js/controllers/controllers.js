@@ -88,6 +88,7 @@ angular.module('hexGame.controllers', [])
                 $window.onbeforeunload = function(e) {
                     return 'Reloading this page will reset the game. Are you sure you want to reload this page?';
                 };
+                $scope.showGameScreen();
             }, function(error) {
             	//TODO: display error message (game must already be in progress)
             });
@@ -103,6 +104,7 @@ angular.module('hexGame.controllers', [])
             addBoardLetters();
             addPawns(movesToDisplayWhenLoginAsViewer);
             addWinningPathToArray($scope.winningPath, winningPathToDisplayWhenLoginAsViewer);
+            $scope.showGameScreen();
         };
         
         $scope.isViewer = function() {
