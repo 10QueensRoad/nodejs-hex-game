@@ -240,6 +240,8 @@ angular.module('hexGame.controllers', [])
                 	}
                 });
             }, d3TransitionsService.boardFadeOutAnimationTotalDuration());
+            $scope.aboutScreenSelected = false;
+            $scope.gameScreenSelected = false;
         };
 
         $scope.gameScreenSelected = true;
