@@ -16,8 +16,10 @@
     - NICE ADU: Don't redraw boardCells, boardLetters and winningMessage, just replay animation (as per winningMessageBackground)
     - NICE: Enable/Disable animations based on user-agent
     - NICE: Sounds?
-    
+    - NICE PX: Position the information on the game page in a more elegant way.
+
 = General
+    - SHOULD PX: Extract the sections into different html partial files to be easy for testing
 	- SHOULD: Extend Jasmine/Angular-mock test coverage (using Karma and Istanbul?)
 	- SHOULD: Improve server-side and client-side error handling
 	- NICE: Logging
