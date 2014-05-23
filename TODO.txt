@@ -13,8 +13,8 @@
 = Game display
     - SHOULD TT: Add "about" dialog (presenting Bombora, the technical stack and possibly the game statistics)
     - SHOULD AJH: Adapt CSS/SVG to all screen sizes.
-    - SHOULD ADU: Draw a rectangle behind winning message. Style winning message.
     - NICE ADU: When previousPawnsCount > 1, delay wining path drawing
+    - NICE ADU: Don't redraw boardCells, boardLetters and winningMessage, just replay animation (as per winningMessageBackground)
     - NICE: Enable/Disable animations based on user-agent
     - NICE: Sounds?
     

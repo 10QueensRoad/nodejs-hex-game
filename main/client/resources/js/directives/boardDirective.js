@@ -41,6 +41,9 @@ angular.module('hexGame.directives.boardDirective', [])
                 //Add border polylines
                 d3ComponentFactoryService.appendBorders(bordersGroup);
 
+                //Add winning message background
+                var winningMessageBackground = d3ComponentFactoryService.appendWinningMessageBackground(winningPathGroup);
+
                 //Draw pawns whenever needed
                 scope.$watchCollection('pawns', function(newValue) {
                     if (angular.isArray(newValue)) {
@@ -153,7 +156,15 @@ angular.module('hexGame.directives.boardDirective', [])
                         var winningText = scope.getWinningText();
                         if (angular.isDefined(winningText)) {
                             winningTextData.push(winningText);
+                            d3TransitionsService.fadeIn(
+                                    winningMessageBackground.style('fill', 'white'), true,
+                                    function() { return boardConfiguration.animations.longDuration; })
+                                .style('fill', scope.getWinningSide());
                         }
+                    } else {
+                        d3TransitionsService.fadeOutAndRemove(
+                            winningMessageBackground, true,
+                            function() { return boardConfiguration.animations.shortDuration; }, false);
                     }
                     /* TODO put back when server-side logic can determine shortest winning path
                      var winningPathSegments = winningPathGroup.selectAll(".winningPathSegments")
@@ -184,7 +195,8 @@ angular.module('hexGame.directives.boardDirective', [])
                             .attr('class', 'winningMessage')
                             .text(function (d) { return d; }),
                         boardConfiguration.animations.winningMessage,
-                        function() { return boardConfiguration.animations.veryLongDuration; });
+                        function() { return boardConfiguration.animations.longDuration
+                            + boardConfiguration.animations.shortDuration; });
                     //Add winning pawns
                     d3TransitionsService.moveUpAndChangeColor(winningPawns
                         .enter()

@@ -22,7 +22,9 @@ angular.module('hexGame.d3AngularServices', [])
             'veryLongDuration': 2000
         },
         'cellSymbolId' : 'cellSymbol',
-        'winningPathColor': 'yellow'
+        'winningPathColor': 'yellow',
+        'winningMessageBackgroundWidth': 280, //Should be multiple of 2
+        'winningMessageBackgroundHeight': 60 //Should be multiple of 4
     })
     /* Return the static data for the game */
     .factory('gameStaticData', function(boardConfiguration) {
@@ -135,7 +137,7 @@ angular.module('hexGame.d3AngularServices', [])
                 .append("polygon")
                     .attr("width", boardConfiguration.cellWidth)
                     .attr("height", boardConfiguration.cellHeight)
-                    .attr("points", getHexagonPoints())
+                    .attr("points", getHexagonPoints(boardConfiguration.cellWidth, boardConfiguration.cellHeight, 0, 0))
                     .attr("class", "boardCellSymbol");
         };
 
@@ -151,13 +153,27 @@ angular.module('hexGame.d3AngularServices', [])
             });
         };
 
+        this.appendWinningMessageBackground = function(parentElement) {
+            return parentElement
+                .append("polygon")
+                    .attr("width", boardConfiguration.winningMessageBackgroundWidth)
+                    .attr("height", boardConfiguration.winningMessageBackgroundHeight)
+                    .attr('opacity', 0)
+                    .attr("points", getHexagonPoints(
+                        boardConfiguration.winningMessageBackgroundWidth,
+                        boardConfiguration.winningMessageBackgroundHeight,
+                        d3CoordinatesService.getWinningMessageXCoordinate() - boardConfiguration.winningMessageBackgroundWidth / 2,
+                        d3CoordinatesService.getWinningMessageYCoordinate() - boardConfiguration.winningMessageBackgroundHeight / 2 - 10))
+                    .attr("class", "winningMessageBackground");
+        };
+
         /* Private methods */
 
-        var getHexagonPoints = function() {
+        var getHexagonPoints = function(hexagonWidth, hexagonHeight, leftOffset, topOffset) {
             return _.chain([[0.5, 0], [1, 0.25], [1, 0.75], [0.5, 1], [0, 0.75], [0, 0.25]])
                 .map(function(coordsPair) {
-                    return coordsPair[0] * boardConfiguration.cellWidth + "," +
-                        coordsPair[1] * boardConfiguration.cellHeight
+                    return (leftOffset + coordsPair[0] * hexagonWidth) + "," +
+                        (topOffset + coordsPair[1] * hexagonHeight);
                 })
                 .reduce(function(points, point) {return points + (points.length > 0 ? ' ' : '') + point;}, "");
         };
@@ -238,7 +254,10 @@ angular.module('hexGame.d3AngularServices', [])
             }
         };
 
-        this.fadeOutAndRemove = function(d3Element, animate, delayFn) {
+        this.fadeOutAndRemove = function(d3Element, animate, delayFn, removeElementAtEnd) {
+            if (!angular.isDefined(removeElementAtEnd)) {
+                removeElementAtEnd = true;
+            }
             if (animate) {
                 return d3Element
                     .attr('opacity', 1)
@@ -247,7 +266,9 @@ angular.module('hexGame.d3AngularServices', [])
                     .duration(boardConfiguration.animations.shortDuration)
                     .delay(delayFn)
                     .each("end", function () {
-                        d3.select(this).remove();
+                        if (removeElementAtEnd) {
+                            d3.select(this).remove();
+                        }
                     });
             } else {
                 return d3Element;

@@ -151,9 +151,16 @@
 .winningMessage {
     font-family: AlrightSansMedium,"Helvetica Neue",Helvetica,Arial,sans-serif;
     font-size: 26px;
-    fill: black;
+    fill: white;
     pointer-events: none;
     text-anchor: middle;
+}
+
+.winningMessageBackground {
+    stroke: black;
+    stroke-width: 1;
+    fill: white;
+    pointer-events: none;
 }
 
 .clickable svg g#cellsGroup use.boardCell:hover {

@@ -61,6 +61,7 @@ io.set('authorization', socketioJwt.authorize({
 
 io.sockets.on('connection', function (socket) {
     var side = socket.handshake.decoded_token.side;
+    var currentToken = socket.handshake.query.token;
     console.log("notification: --------------------------- " + side, 'connected');
     if (side !== 'blue' && side !== 'red') {
         return;
@@ -100,8 +101,11 @@ io.sockets.on('connection', function (socket) {
             resetGame();
         }
     }).on('disconnect', function(){
-        console.log("notification: --------------------------- " + side + " disconnected, resetting game");
-        resetGame();
+        var color = _.findKey(playerTokens, function(d) { return d === currentToken; });
+        if (color) {
+            console.log("notification: --------------------------- " + color, " disconnected, resetting game");
+            resetGame();
+        }
     });
 });
 
