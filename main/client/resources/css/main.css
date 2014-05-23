@@ -43,9 +43,6 @@
     text-align: center;
 }
 
-.welcomeScreenJoin:hover {
-    cursor: pointer;
-}
 
 .welcomeScreenView {
     display: inline-block;
@@ -56,10 +53,6 @@
     padding-top: 180px;
     width: 230px;
     text-align: center;
-}
-
-.welcomeScreenView:hover {
-    cursor: pointer;
 }
 
 .gameControls {
@@ -173,6 +166,10 @@
 	cursor: pointer;
 }
 
+.join, .view {
+    cursor: pointer;
+}
+
 .projectorView {
 	position: absolute;
 	bottom: 30px;
@@ -224,7 +221,6 @@ section {
     -ms-transform: rotate(120deg);
     -webkit-transform: rotate(120deg);
     transform: rotate(120deg);
-    cursor: pointer;
     height: 440px;
     overflow: hidden;
     visibility: hidden;
