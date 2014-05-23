@@ -225,7 +225,6 @@ section {
     overflow: hidden;
     visibility: hidden;
     width: 220px;
-    border-radius: 200px;
 }
 
 .hex1 {
@@ -236,7 +235,6 @@ section {
     height: 100%;
     overflow: hidden;
     width: 100%;
-    border-radius: 200px;
 }
 
 .hex2 {
@@ -250,7 +248,6 @@ section {
     position: relative;
     visibility: visible;
     width: 100%;
-    border-radius: 200px;
 }
 
 .desc {
