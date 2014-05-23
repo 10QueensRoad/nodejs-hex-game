@@ -46,8 +46,12 @@ app.post('/joinAsPlayer', function (req, res) {
 
 app.post('/viewer', function (req, res) {
     console.log('/viewer');
-    var viewerToken = participants.viewerJoins();
-    res.json({token: viewerToken, fullStatus: hexGame.fullStatus()});
+    var viewerData = {
+        token: participants.viewerJoins(),
+        fullStatus: hexGame.fullStatus(),
+        gameStatistics: gameStatistics.stats()
+    };
+    res.json(viewerData);
 });
 
 io.set('authorization', socketioJwt.authorize({
@@ -91,6 +95,7 @@ io.sockets.on('connection', function (socket) {
             response.isError = false;
             if (gameStatus.winningPath) {
                 gameStatistics.gameFinished(hexGame.fullStatus());
+                io.sockets.emit('gameStatistics', gameStatistics.stats());
             }
         } catch (exception) {
             console.log('!! ' + exception);

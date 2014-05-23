@@ -171,10 +171,21 @@
 }
 
 .projectorView {
-	position: absolute;
-	bottom: 30px;
-	font-size: 22px;
+    position: absolute;
+    bottom: 30px;
+}
+
+.projectorView .qrCodeIntro {
+    font-size: 22px;
     text-align: center;
+}
+
+dl.statistics {
+    padding-left: 20px;
+}
+
+dl.statistics dd, dl.statistics dt {
+    display: inline;
 }
 
 /* Thanks to dmac37 for this hex technique */
