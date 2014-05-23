@@ -5,6 +5,8 @@ var HexGame = game.HexGame;
 var Pawn = game.Pawn;
 var GameBoard = game.GameBoard;
 var GameStatus = game.GameStatus;
+var FullStatus = game.FullStatus;
+var GameStatistics = game.GameStatistics;
 
 describe('A newly created PlayerTurn', function() {
     var playerTurn;
@@ -380,5 +382,66 @@ describe('A GameBoard with red pawns at (5,5) and (5,4) for red and a pawn at (4
     });
     it('should return all pawns when getting all pawns', function() {
         expect(gameBoard.allPawns()).toEqual([pawn3, pawn2, pawn1]);
+    });
+});
+
+describe('A newly created GameStatistics', function() {
+    var gameStatistics = new GameStatistics();
+
+    it('should return zero statistics', function() {
+        var stats = gameStatistics.stats();
+        expect(stats.gamesStarted).toEqual(0);
+        expect(stats.wins).toEqual({});
+        expect(stats.longestGame).toBeNull();
+        expect(stats.shortestGame).toBeNull();
+        expect(stats.longestWinningPath).toBeNull();
+        expect(stats.shortestWinningPath).toBeNull();
+        expect(stats.totalPawnsPlaced).toBe(0);
+    });
+});
+
+describe('A GameStatistics after a single game has been started and finished', function() {
+    var gameStatistics = new GameStatistics();
+    var fullStatus = new FullStatus("redWon", [new Pawn(), new Pawn(), new Pawn()], [new Pawn(), new Pawn()]);
+
+
+    gameStatistics.gameStarted();
+    gameStatistics.gameFinished(fullStatus);
+
+    it('should return statistics based on that game', function() {
+        var stats = gameStatistics.stats();
+        expect(stats.gamesStarted).toEqual(1);
+        expect(stats.wins).toEqual({red: 1});
+        expect(stats.longestGame).toBe(3);
+        expect(stats.shortestGame).toBe(3);
+        expect(stats.longestWinningPath).toBe(2);
+        expect(stats.shortestWinningPath).toBe(2);
+        expect(stats.totalPawnsPlaced).toBe(3);
+    });
+});
+
+describe('A GameStatistics after multiple games have been started and finished', function() {
+    var gameStatistics = new GameStatistics();
+    var fullStatus1 = new FullStatus("redWon", [new Pawn(), new Pawn(), new Pawn()], [new Pawn(), new Pawn()]);
+    var fullStatus2 = new FullStatus("blueWon", [new Pawn(), new Pawn()], [new Pawn()]);
+    var fullStatus3 = new FullStatus("redWon", [new Pawn(), new Pawn(), new Pawn(), new Pawn()], [new Pawn(), new Pawn(), new Pawn()]);
+
+
+    gameStatistics.gameStarted();
+    gameStatistics.gameFinished(fullStatus1);
+    gameStatistics.gameStarted();
+    gameStatistics.gameFinished(fullStatus2);
+    gameStatistics.gameStarted();
+    gameStatistics.gameFinished(fullStatus3);
+
+    it('should return statistics based on those games', function() {
+        var stats = gameStatistics.stats();
+        expect(stats.gamesStarted).toEqual(3);
+        expect(stats.wins).toEqual({red: 2, blue: 1});
+        expect(stats.longestGame).toBe(4);
+        expect(stats.shortestGame).toBe(2);
+        expect(stats.longestWinningPath).toBe(3);
+        expect(stats.shortestWinningPath).toBe(1);
+        expect(stats.totalPawnsPlaced).toBe(9);
     });
 });

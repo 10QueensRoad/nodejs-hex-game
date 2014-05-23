@@ -4,7 +4,6 @@
     - NICE: Include and validate viewer token in POST to /joinAsPlayer
 
 = Game logic
-	- MUST AJH: Should catch thrown exceptions and recover from them, instead of quitting the app
 	- SHOULD: Automatically reset won game after x seconds
 	- SHOULD AJH: Count game statistics
     - NICE AJH: Return shortest winning path

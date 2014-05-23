@@ -4,6 +4,8 @@ exports.HexGame = HexGame;
 exports.Pawn = Pawn;
 exports.GameBoard = GameBoard;
 exports.GameStatus = GameStatus;
+exports.FullStatus = FullStatus;
+exports.GameStatistics = GameStatistics;
 
 DEFAULT_GAME_BOARD_SIZE = 11;
 
@@ -261,4 +263,42 @@ function FullStatus(currentStatus, pawns, winningPath) {
     this.currentStatus = currentStatus;
     this.pawns = pawns;
     this.winningPath = winningPath;
+}
+
+function GameStatistics() {
+
+    var stats = {
+        gamesStarted: 0,
+        wins: {},
+        longestGame: null,
+        shortestGame: null,
+        longestWinningPath: null,
+        shortestWinningPath: null,
+        totalPawnsPlaced: 0
+    };
+
+    function addWinFor(side) {
+        stats.wins[side] = stats.wins[side] || 0;
+        ++stats.wins[side];
+    }
+
+    this.gameStarted = function() {
+        ++stats.gamesStarted;
+    };
+
+    this.gameFinished = function(fullStatus) {
+        addWinFor(fullStatus.currentStatus.slice(0, -'Won'.length));
+
+        var pawnsPlaced = fullStatus.pawns.length;
+        var winningPathLength = fullStatus.winningPath.length;
+        stats.longestGame = Math.max(stats.longestGame || 0, pawnsPlaced);
+        stats.shortestGame = Math.min(stats.shortestGame || pawnsPlaced, pawnsPlaced);
+        stats.longestWinningPath = Math.max(stats.longestWinningPath || 0, winningPathLength);
+        stats.shortestWinningPath = Math.min(stats.shortestWinningPath || winningPathLength, winningPathLength);
+        stats.totalPawnsPlaced += pawnsPlaced;
+    };
+
+    this.stats = function() {
+        return stats;
+    };
 }

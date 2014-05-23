@@ -25,6 +25,7 @@ var express = require('express')
 app.use(favicon(__dirname + "/client/resources/images/favicon.ico"));
 
 var hexGame = new game.HexGame();
+var gameStatistics = new game.GameStatistics();
 var participants = new Participants();
 
 app.get('/', function (req, res) {
@@ -64,6 +65,7 @@ io.sockets.on('connection', function (socket) {
     playersConnected[side] = true;
     if (playersConnected['red'] && playersConnected['blue']) {
         try {
+            gameStatistics.gameStarted();
             hexGame.start();
         } catch (exception) {
             console.log(exception);
@@ -87,6 +89,9 @@ io.sockets.on('connection', function (socket) {
         try {
             gameStatus = hexGame.placePawn(new game.Pawn(moveRequest.x, moveRequest.y, side));
             response.isError = false;
+            if (gameStatus.winningPath) {
+                gameStatistics.gameFinished(hexGame.fullStatus());
+            }
         } catch (exception) {
             console.log('!! ' + exception);
             // Compatibility with existing implementation. May need to be revised.
