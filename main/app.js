@@ -67,6 +67,8 @@ io.sockets.on('connection', function (socket) {
             hexGame.start();
         } catch (exception) {
             console.log(exception);
+            hexGame = new game.HexGame();
+            hexGame.start();
         }
 		io.sockets.emit('gameStatus', hexGame.gameStatus());
     }
