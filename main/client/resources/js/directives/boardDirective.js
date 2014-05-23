@@ -59,11 +59,11 @@ angular.module('hexGame.directives.boardDirective', [])
                 });
 
                 //Draw board title whenever needed
-                scope.$watchCollection('boardTitle', function(newValue) {
-                    if (angular.isArray(newValue)) {
-                        drawBoardTitle();
-                    }
-                });
+//                scope.$watchCollection('boardTitle', function(newValue) {
+//                    if (angular.isArray(newValue)) {
+//                        drawBoardTitle();
+//                    }
+//                });
 
                 //Draw winning path whenever needed
                 scope.$watchCollection('winningPath', function(newValue) {

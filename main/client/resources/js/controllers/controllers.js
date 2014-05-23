@@ -235,13 +235,13 @@ angular.module('hexGame.controllers', [])
             _.delay(function() {
                 $scope.$apply(function() {
                     $scope.side = undefined;
+                    $scope.aboutScreenSelected = false;
+                    $scope.gameScreenSelected = false;
                     if ($scope.isProjectorView()) {
                 		$scope.loginAsViewer();
                 	}
                 });
             }, d3TransitionsService.boardFadeOutAnimationTotalDuration());
-            $scope.aboutScreenSelected = false;
-            $scope.gameScreenSelected = false;
         };
 
         $scope.gameScreenSelected = true;
