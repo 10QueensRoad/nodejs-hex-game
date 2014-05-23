@@ -1,7 +1,6 @@
 var jwtSecret = 'hex game secret private key';
 var response = {};
 var playersConnected = {};
-var playerTokens = {};
 var port = 3000;
 
 _ = require('./client/resources/js/lib/lodash-2.4.1');
@@ -26,6 +25,7 @@ var express = require('express')
 app.use(favicon(__dirname + "/client/resources/images/favicon.ico"));
 
 var hexGame = new game.HexGame();
+var participants = new Participants();
 
 app.get('/', function (req, res) {
     res.sendfile(__dirname + '/client/views/index.html')
@@ -34,24 +34,18 @@ app.get('/', function (req, res) {
 app.use('/resources', express.static(__dirname + "/client/resources"));
 
 app.post('/joinAsPlayer', function (req, res) {
-	var color = !playerTokens['red'] ? 'red' : (!playerTokens['blue'] ? 'blue' : undefined);
-	if (!color) {
-		return res.send(403, 'Game already in progress');
-	}
-    var playerSideProfile = {
-        side: color
-    };
-    playerTokens[color] = jwt.sign(playerSideProfile, jwtSecret, { expiresInMinutes: 15 });
-    res.json({token: playerTokens[color], side: color, gameStatus: hexGame.gameStatus()});
+    console.log('/joinAsPlayer')
+    if (participants.allPlayersJoined()) {
+        return res.send(403, 'Game already in progress');
+    }
+
+    var player = participants.playerJoins();
+    res.json(_.extend({}, player, {gameStatus: hexGame.gameStatus()}));
 });
 
 app.post('/viewer', function (req, res) {
-    var viewerProfile = {
-        side: 'viewer'
-    };
-
-    var viewerToken = jwt.sign(viewerProfile, jwtSecret, { expiresInMinutes: 60 });
-    // TODO: Return full game status
+    console.log('/viewer');
+    var viewerToken = participants.viewerJoins();
     res.json({token: viewerToken, fullStatus: hexGame.fullStatus()});
 });
 
@@ -64,24 +58,27 @@ io.sockets.on('connection', function (socket) {
     var side = socket.handshake.decoded_token.side;
     var currentToken = socket.handshake.query.token;
     console.log("notification: --------------------------- " + side, 'connected');
-    // TODO: see if we can use a session, to be refresh-resistant. Also, don't include token in the URL (client-side)
     if (side !== 'blue' && side !== 'red') {
         return;
     }
     playersConnected[side] = true;
     if (playersConnected['red'] && playersConnected['blue']) {
-        hexGame.start();
+        try {
+            hexGame.start();
+        } catch (exception) {
+            console.log(exception);
+        }
 		io.sockets.emit('gameStatus', hexGame.gameStatus());
     }
     function resetGame() {
-        playerTokens = _.transform(playerTokens, function(result, value, key) { result[key] = undefined; });
+        participants = new Participants();
         playersConnected = _.transform(playersConnected, function(result, value, key) { result[key] = false; });
         hexGame = new game.HexGame(); //Reset game
         io.sockets.emit('gameStatus', hexGame.gameStatus());
     }
     socket.on('moveRequest', function (moveRequest) {
-        if ((!playersConnected['red'] || !playersConnected['blue']) || 
-        	(!_.some(playerTokens, function(d) { return d === moveRequest.token; }))) {
+        if ((!playersConnected['red'] || !playersConnected['blue']) ||
+            !participants.isPlayer(moveRequest.token)) {
             return;
         }
         var gameStatus;
@@ -93,23 +90,59 @@ io.sockets.on('connection', function (socket) {
             // Compatibility with existing implementation. May need to be revised.
             gameStatus = hexGame.gameStatus();
             response.isError = true;
+            response.errorSide = side;
         }
-        // TODO: Ensure response.errorSide is loaded with the colour of the player that generated the error.
-
         io.sockets.emit('gameStatus', gameStatus);
     }).on('logout', function(logoutRequest) {
-    	var color = _.findKey(playerTokens, function(d) { return d === logoutRequest.token; });
-        if (color) {
-            console.log("notification: --------------------------- " + color, 'logged out, resetting game');
+        if (participants.isPlayer(currentToken)) {
+            console.log("notification: --------------------------- " + side, 'logged out, resetting game');
             resetGame();
         }
     }).on('disconnect', function(){
-        var color = _.findKey(playerTokens, function(d) { return d === currentToken; });
-        if (color) {
-            console.log("notification: --------------------------- " + color, " disconnected, resetting game");
+        // Problem: Once a player "connects", they will continue to be connected even if they
+        // quit a game and become a viewer. We don't want this player to terminate a game in
+        // progress if this is the case.
+        if (participants.isPlayer(currentToken)) {
+            console.log("notification: --------------------------- " + side, " disconnected, resetting game");
             resetGame();
         }
     });
 });
 
 server.listen(port);
+
+function Participants() {
+
+    var players = [{
+        side: 'red',
+        token: null
+    }, {
+        side: 'blue',
+        token: null
+    }];
+
+    this.viewerJoins = function() {
+        return jwt.sign({side: 'viewer'}, jwtSecret, { expiresInMinutes: 60 });
+    };
+
+    this.playerJoins = function() {
+        if (!this.allPlayersJoined()) {
+            var player = _.findWhere(players, {token: null});
+            var token = jwt.sign({side: player.side}, jwtSecret, { expiresInMinutes: 15 });
+            player.token = token;
+            return player;
+        }
+    };
+
+    this.allPlayersJoined = function() {
+        return !_.findWhere(players, {token: null});
+    };
+
+    this.isPlayer = function(token) {
+        return !!_.findWhere(players, {token: token})
+    };
+
+    this.players = function() {
+        return players;
+    };
+}
