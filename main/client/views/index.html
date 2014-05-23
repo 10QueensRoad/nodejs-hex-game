@@ -20,10 +20,94 @@
     <link rel="stylesheet" href="resources/css/bootstrap.min.css">
 
 <body ng-app="hexGame" ng-controller="HexController">
-<div class="welcomeScreen center-block" ng-show="!side">
-    <span class="welcomeScreenJoin" ng-visible="canJoinAsPlayer()" ng-click="loginAsPlayer()">Join the game</span>
-    <span class="welcomeScreenView" ng-click="loginAsViewer()">View the game</span>
-</div>
+<section ng-show="!side">
+    <div class="hex_row_odd">
+        <div class="center">
+            <div class="hexagon">
+                <div class="hex1">
+                    <div class="hex2" style="background: url('../resources/images/cell1.png') center no-repeat">
+
+                    </div><!--/hex2-->
+                </div><!--/hex1-->
+            </div><!--/hexagon-->
+        </div><!--/center-->
+
+        <div class="center">
+            <div class="hexagon">
+                <div class="hex1">
+                    <div class="hex2" style="background: url('../resources/images/cell2.jpg') center no-repeat">
+                    </div><!--/hex2-->
+                </div><!--/hex1-->
+            </div><!--/hexagon-->
+        </div><!--/center-->
+
+    </div><!--/hex_row_even-->
+
+    <div class="hex_row_even">
+
+        <div class="center">
+            <div class="hexagon">
+                <div class="hex1">
+                    <div class="hex2" style="background: url('../resources/images/cell3.jpg') center no-repeat">
+                        <div class="desc three" ng-visible="canJoinAsPlayer()" ng-click="loginAsPlayer()">
+                            <h2>Join the game</h2>
+                        </div>
+                    </div><!--/hex2-->
+                </div><!--/hex1-->
+            </div><!--/hexagon-->
+        </div><!--/center-->
+
+        <div class="center">
+            <div class="hexagon">
+                <div class="hex1">
+                    <div class="hex2" style="background: url('../resources/images/gameBackground.png') center no-repeat">
+                        <div class="desc">
+
+                        </div>
+                    </div><!--/hex2-->
+                </div><!--/hex1-->
+            </div><!--/hexagon-->
+        </div><!--/center-->
+
+        <div class="center">
+            <div class="hexagon">
+                <div class="hex1">
+                    <div class="hex2" style="background: url('../resources/images/cell4.png') center no-repeat">
+                        <div class="desc base" ng-click="loginAsViewer()">
+                            <h2>View the game</h2>
+                        </div>
+                    </div><!--/hex2-->
+                </div><!--/hex1-->
+            </div><!--/hexagon-->
+        </div><!--/center-->
+
+    </div><!--/hex_row_even-->
+
+    <div class="hex_row_odd">
+        <div class="center">
+            <div class="hexagon">
+                <div class="hex1">
+                    <div class="hex2" style="background: url('../resources/images/cell5.jpg') center no-repeat">
+                        <div class="desc"></div>
+                    </div><!--/hex2-->
+                </div><!--/hex1-->
+            </div><!--/hexagon-->
+        </div><!--/center-->
+
+        <div class="center">
+            <div class="hexagon">
+                <div class="hex1">
+                    <div class="hex2" style="background: url('../resources/images/cell6.jpg') center no-repeat">
+                        <div class="desc"></div>
+                    </div><!--/hex2-->
+                </div><!--/hex1-->
+            </div><!--/hexagon-->
+        </div><!--/center-->
+
+    </div><!--/hex_row_even-->
+
+</section>
+
 <nav class="navbar navbar-default" role="navigation" ng-show="side">
     <div class="container-fluid">
         <div class="navbar-header">
