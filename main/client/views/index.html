@@ -18,10 +18,11 @@
     <script type="text/javascript" src="resources/js/directives/boardDirective.js"></script>
 
     <link rel="stylesheet" href="resources/css/bootstrap.min.css">
+    <link rel="stylesheet" href="resources/font-awesome-4.1.0/css/font-awesome.css">
 
 <body ng-app="hexGame" ng-controller="HexController">
 <!--TODO: Extract the following section into a html partial file-->
-<section ng-show="!side">
+<section ng-show="!side" class="login">
     <div class="hex_row_odd">
         <div class="center">
             <div class="hexagon">
@@ -130,22 +131,38 @@
     </div>
 </nav>
 <div ng-show="side && gameScreenSelected">
-    <board-directive></board-directive>
+    <section class="container">
+        <div style="text-align: center">Connect the two borders of your colour to win the game!</div>
+        <div class="row">
+            <div class="col-xs-2 col-xs-offset-3">
+                <div class="fa fa-user player blue-side" ng-class="{offline: waitingForBluePlayer()}">
+                    {{side === 'blue' ? 'YOU' : 'BLUE PLAYER'}}</span></div>
+                <div class="fa fa-clock-o player blue-side blink" ng-show="getTurnSide() ==='blue'">
+                    Current turn
+                </div>
+            </div>
+            <div class="col-xs-2">
+                <i class="fa fa-group">{{side === 'viewer' ? 'YOU' : 'Views'}}</i>
+            </div>
+            <div class="col-xs-2">
+                <div class="fa fa-user player red-side" ng-class="{offline: waitingForRedPlayer()}">
+                    {{side === 'red' ? 'YOU' : 'RED PLAYER'}}
+                </div>
+                <div class="fa fa-clock-o player red-side blink" ng-show="getTurnSide() ==='red'">
+                    Current turn
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="center-block">
+                <board-directive></board-directive>
+            </div>
+        </div>
+    </section>
+
+
     <div class="gameControls">
-        <div ng-show="isPlayer()">
-            <div class="gameControlsSide">You're the <span
-                    ng-class="{redSide: side == 'red', blueSide: side =='blue'}">{{side}}</span> player</div>
-            <div class="gameControlsTurn" ng-show="isGameInProgress()">It's <span ng-show="!isPlayerTurn()">not</span> your turn!</div>
-            <div class="gameControlsInstructions">Connect the two borders<br/>of your colour<br/>to win the game!</div>
-        </div>
-        <div ng-show="isViewer()">
-            <div class="gameControlsSide" ng-show="!isProjectorView()">You're a viewer</div>
-            <div class="gameControlsSide" ng-show="getTurnSide()"><span
-                    ng-class="{redSide: getTurnSide() == 'red', blueSide: getTurnSide() =='blue'}">{{getTurnText()}}</span> player's turn</div>
-        </div>
-        <div ng-show="isWaitingForPlayers()">
-            <div class="gameControlsWaiting">Waiting for players...</div>
-        </div>
+
     	<div class="projectorView" ng-show="isViewer() && isProjectorView()">
             <div class="qrCodeIntro">
     		Scan this QR code<br />and join the fun!<br /><img src="resources/images/qrCode.png" />

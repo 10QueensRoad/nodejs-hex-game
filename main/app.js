@@ -33,6 +33,8 @@ app.get('/', function (req, res) {
 });
 
 app.use('/resources', express.static(__dirname + "/client/resources"));
+//Expose files under views, mainly for spiking now
+app.use('/', express.static(__dirname + "/client/views"));
 
 app.post('/joinAsPlayer', function (req, res) {
     console.log('/joinAsPlayer')

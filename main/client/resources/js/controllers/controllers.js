@@ -66,7 +66,15 @@ angular.module('hexGame.controllers', [])
         $scope.isWaitingForPlayers = function() {
         	return currentGameStatus == 'waitingForPlayers';
         };
-        
+
+        $scope.waitingForBluePlayer = function() {
+          return currentGameStatus == 'waitingForPlayers' && $scope.side === 'red';
+        };
+
+        $scope.waitingForRedPlayer = function() {
+          return currentGameStatus == 'waitingForPlayers' && $scope.side === 'blue';
+        };
+
         $scope.isGameInProgress = function() {
             return angular.isDefined($scope.getTurnSide());
         };
