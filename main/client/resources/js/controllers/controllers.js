@@ -69,6 +69,8 @@ angular.module('hexGame.controllers', [])
 
         socket.on('gameReset', function () {
             $scope.side = undefined;
+            currentGameStatus = 'waitingForPlayers';
+            gameReset();
         });
         
         $scope.showError = function() { //TODO: remove?

@@ -48,7 +48,6 @@ io.sockets.on('connection', function (socket) {
         _.forEach(io.sockets.clients('game_room'), function (client) {
             client.leave('game_room');
         });
-        io.sockets.emit('gameStatus', hexGame.gameStatus());
     }
 
     socket.emit('gameStatus', hexGame.gameStatus());
