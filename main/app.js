@@ -66,7 +66,6 @@ io.sockets.on('connection', function (socket) {
                 }
 		io.sockets.emit('gameStatus', hexGame.gameStatus());
             }
-            socket.emit('gameStatus', hexGame.gameStatus());
         }
     });
 
