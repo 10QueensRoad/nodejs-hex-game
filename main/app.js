@@ -42,6 +42,7 @@ io.sockets.on('connection', function (socket) {
     }
 
     function resetGame() {
+        side = undefined;
         hexGame = new game.HexGame(); //Reset game
         io.sockets.emit('gameStatus', hexGame.gameStatus());
     }
@@ -61,8 +62,7 @@ io.sockets.on('connection', function (socket) {
                     hexGame.start();
                 } catch (exception) {
                     console.log(exception);
-                    hexGame = new game.HexGame();
-                    hexGame.start();
+                    resetGame();
                 }
 		io.sockets.emit('gameStatus', hexGame.gameStatus());
             }
