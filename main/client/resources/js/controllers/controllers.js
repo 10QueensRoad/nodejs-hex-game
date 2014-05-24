@@ -4,7 +4,7 @@
 
 angular.module('hexGame.controllers', [])
     .controller('HexController', function($scope, $window, $location,
-    	boardConfiguration, gameStaticData, serverCommunicationService, d3TransitionsService) {
+    	boardConfiguration, gameStaticData, d3TransitionsService) {
         $scope.side = undefined;
         $scope.hasError = false;
         var errorSide = undefined;
@@ -17,9 +17,9 @@ angular.module('hexGame.controllers', [])
         var movesToDisplayWhenLoginAsViewer = [];
         var winningPathToDisplayWhenLoginAsViewer = [];
         var isProjectorView = angular.isDefined($location.search().projectorView);
+        var socket = io.connect();
 
-        //Server events handlers
-        var handleGameStatusUpdate = function(serverResponse) {
+        socket.on('gameStatus', function(serverResponse) {
             $scope.$apply(function() {
                 if (!serverResponse.isError) {
                     $scope.hasError = false;
@@ -40,46 +40,10 @@ angular.module('hexGame.controllers', [])
                     errorSide = serverResponse.side;
                 }
             });
-        };
+        });
 
-        //Connect as viewer initially
-        serverConnection = serverCommunicationService.connectAsViewer(
-            [['gameStatus', handleGameStatusUpdate]],
-            function(serverResponse) {
-                currentGameStatus = serverResponse.fullStatus.currentStatus;
-                movesToDisplayWhenLoginAsViewer = (serverResponse.fullStatus.moves || []);
-                winningPathToDisplayWhenLoginAsViewer = (serverResponse.fullStatus.winningPath || []);
-                if ($scope.isProjectorView()) {
-                	$scope.loginAsViewer();
-                }
-            },
-            function() {
-                $scope.hasError = true;
-                //TODO get errorSide from serverResponse;
-                $scope.showError();
-            });
-        
-        $scope.showError = function() { //TODO: remove?
-            return $scope.hasError && errorSide == $scope.side;
-        };
-        
-        $scope.isWaitingForPlayers = function() {
-        	return currentGameStatus == 'waitingForPlayers';
-        };
-        
-        $scope.isGameInProgress = function() {
-            return angular.isDefined($scope.getTurnSide());
-        };
-
-        $scope.canJoinAsPlayer = function() {
-            return $scope.isWaitingForPlayers() && !$scope.side && !$scope.isProjectorView();
-        };
-
-        $scope.loginAsPlayer = function() {
-            if (!$scope.canJoinAsPlayer()) {
-                return;
-            }
-            serverConnection.loginAsPlayer(function(serverResponse) {
+        socket.on('player_joined', function (serverResponse) {
+            $scope.$apply(function () {
                 $scope.side = serverResponse.side;
                 currentGameStatus = serverResponse.gameStatus.currentStatus;
                 addCells();
@@ -89,13 +53,29 @@ angular.module('hexGame.controllers', [])
                     return 'Reloading this page will reset the game. Are you sure you want to reload this page?';
                 };
                 $scope.showGameScreen();
-            }, function(error) {
-            	//TODO: display error message (game must already be in progress)
             });
+        });
+
+        socket.on('error', function () {
+            $scope.hasError = true;
+            //TODO get errorSide from serverResponse;
+            $scope.showError();
+        });
+        
+        $scope.showError = function() { //TODO: remove?
+            return $scope.hasError && errorSide == $scope.side;
+        };
+        
+        $scope.isWaitingForPlayers = function() {
+            return currentGameStatus == 'waitingForPlayers';
+        };
+        
+        $scope.isGameInProgress = function() {
+            return angular.isDefined($scope.getTurnSide());
         };
 
-        $scope.isPlayer = function() {
-            return $scope.side == 'red' || $scope.side == 'blue';
+        $scope.canJoinAsPlayer = function() {
+            return $scope.isWaitingForPlayers() && !$scope.side && !$scope.isProjectorView();
         };
 
         $scope.loginAsViewer = function() {
@@ -107,13 +87,24 @@ angular.module('hexGame.controllers', [])
             $scope.showGameScreen();
         };
 
+        $scope.loginAsPlayer = function() {
+            if (!$scope.canJoinAsPlayer()) {
+                return;
+            }
+            socket.emit('join_as_player');
+        };
+
+        $scope.isPlayer = function() {
+            return $scope.side == 'red' || $scope.side == 'blue';
+        };
+
         $scope.isViewer = function() {
             return $scope.side == 'viewer';
         };
 
         $scope.handleBoardClick = function(x, y) {
             if ($scope.isPlayerTurn()) {
-                serverConnection.emitEvent('moveRequest', {x: x, y: y});
+                socket.emit('moveRequest', {x: x, y: y});
             }
         };
 
@@ -122,7 +113,7 @@ angular.module('hexGame.controllers', [])
         		return;
         	}
             if ($scope.isPlayer()) {
-                serverConnection.emitEvent('logout');
+                socket.emit('logout');
             }
             gameReset();
         };
@@ -177,9 +168,9 @@ angular.module('hexGame.controllers', [])
         };
         
         $scope.isProjectorView = function() {
-        	return isProjectorView;
+            return isProjectorView;
         };
-        
+
         //Data management functions
         var addPawnToArray = function(pawnsArray, pawn) {
         	if (angular.isObject(pawn)
@@ -245,4 +236,9 @@ angular.module('hexGame.controllers', [])
         };
 
         $scope.gameScreenSelected = true;
+
+        if ($scope.isProjectorView()) {
+            $scope.loginAsViewer();
+        }
+        
     });

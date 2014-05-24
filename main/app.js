@@ -34,55 +34,47 @@ app.get('/', function (req, res) {
 
 app.use('/resources', express.static(__dirname + "/client/resources"));
 
-app.post('/joinAsPlayer', function (req, res) {
-    console.log('/joinAsPlayer')
-    if (participants.allPlayersJoined()) {
-        return res.send(403, 'Game already in progress');
-    }
-
-    var player = participants.playerJoins();
-    res.json(_.extend({}, player, {gameStatus: hexGame.gameStatus()}));
-});
-
-app.post('/viewer', function (req, res) {
-    console.log('/viewer');
-    var viewerToken = participants.viewerJoins();
-    res.json({token: viewerToken, fullStatus: hexGame.fullStatus()});
-});
-
-io.set('authorization', socketioJwt.authorize({
-    secret: jwtSecret,
-    handshake: true
-}));
-
 io.sockets.on('connection', function (socket) {
-    var side = socket.handshake.decoded_token.side;
-    var currentToken = socket.handshake.query.token;
-    console.log("notification: --------------------------- " + side, 'connected');
-    if (side !== 'blue' && side !== 'red') {
-        return;
+    var side = undefined;
+
+    function isPlayer() {
+        return side === 'blue' || side === 'red';
     }
-    playersConnected[side] = true;
-    if (playersConnected['red'] && playersConnected['blue']) {
-        try {
-            gameStatistics.gameStarted();
-            hexGame.start();
-        } catch (exception) {
-            console.log(exception);
-            hexGame = new game.HexGame();
-            hexGame.start();
-        }
-		io.sockets.emit('gameStatus', hexGame.gameStatus());
-    }
+
     function resetGame() {
         participants = new Participants();
         playersConnected = _.transform(playersConnected, function(result, value, key) { result[key] = false; });
         hexGame = new game.HexGame(); //Reset game
         io.sockets.emit('gameStatus', hexGame.gameStatus());
     }
+
+    socket.emit('gameStatus', hexGame.gameStatus());
+
+    socket.on('join_as_player', function () {
+        console.log('join as player');
+        if (participants.allPlayersJoined()) {
+            socket.emit('error', { message: 'Game already in progress' });
+        } else {
+            var player = participants.playerJoins();
+            side = player.side;
+            playersConnected[side] = true;
+            socket.emit('player_joined', _.extend({}, player, {gameStatus: hexGame.gameStatus()}));
+            if (playersConnected['red'] && playersConnected['blue']) {
+                try {
+                    gameStatistics.gameStarted();
+                    hexGame.start();
+                } catch (exception) {
+                    console.log(exception);
+                    hexGame = new game.HexGame();
+                    hexGame.start();
+                }
+		io.sockets.emit('gameStatus', hexGame.gameStatus());
+            }
+        }
+    });
+
     socket.on('moveRequest', function (moveRequest) {
-        if ((!playersConnected['red'] || !playersConnected['blue']) ||
-            !participants.isPlayer(moveRequest.token)) {
+        if (!isPlayer()) {
             return;
         }
         var gameStatus;
@@ -101,7 +93,7 @@ io.sockets.on('connection', function (socket) {
         }
         io.sockets.emit('gameStatus', gameStatus);
     }).on('logout', function(logoutRequest) {
-        if (participants.isPlayer(currentToken)) {
+        if (isPlayer()) {
             console.log("notification: --------------------------- " + side, 'logged out, resetting game');
             resetGame();
         }
@@ -109,7 +101,7 @@ io.sockets.on('connection', function (socket) {
         // Problem: Once a player "connects", they will continue to be connected even if they
         // quit a game and become a viewer. We don't want this player to terminate a game in
         // progress if this is the case.
-        if (participants.isPlayer(currentToken)) {
+        if (isPlayer()) {
             console.log("notification: --------------------------- " + side, " disconnected, resetting game");
             resetGame();
         }
@@ -143,10 +135,6 @@ function Participants() {
 
     this.allPlayersJoined = function() {
         return !_.findWhere(players, {token: null});
-    };
-
-    this.isPlayer = function(token) {
-        return !!_.findWhere(players, {token: token})
     };
 
     this.players = function() {
