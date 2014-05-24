@@ -47,7 +47,7 @@ angular.module('hexGame.controllers', [])
             [['gameStatus', handleGameStatusUpdate]],
             function(serverResponse) {
                 currentGameStatus = serverResponse.fullStatus.currentStatus;
-                movesToDisplayWhenLoginAsViewer = (serverResponse.fullStatus.moves || []);
+                movesToDisplayWhenLoginAsViewer = (serverResponse.fullStatus.pawns || []);
                 winningPathToDisplayWhenLoginAsViewer = (serverResponse.fullStatus.winningPath || []);
                 if ($scope.isProjectorView()) {
                 	$scope.loginAsViewer();
