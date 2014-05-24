@@ -49,13 +49,13 @@ io.sockets.on('connection', function (socket) {
 
     socket.emit('gameStatus', hexGame.gameStatus());
 
-    socket.on('join_as_player', function () {
+    socket.on('joinAsPlayer', function () {
         console.log('join as player');
         if (hexGame.allPlayersJoined()) {
             socket.emit('error', { message: 'Game already in progress' });
         } else {
             side = hexGame.playerJoins();
-            socket.emit('player_joined', {side: side});
+            socket.emit('playerJoined', {side: side});
             if (hexGame.allPlayersJoined()) {
                 try {
                     gameStatistics.gameStarted();

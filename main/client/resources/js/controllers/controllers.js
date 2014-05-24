@@ -42,7 +42,7 @@ angular.module('hexGame.controllers', [])
             });
         });
 
-        socket.on('player_joined', function (serverResponse) {
+        socket.on('playerJoined', function (serverResponse) {
             $scope.$apply(function () {
                 $scope.side = serverResponse.side;
                 addCells();
@@ -98,7 +98,7 @@ angular.module('hexGame.controllers', [])
             if (!$scope.canJoinAsPlayer()) {
                 return;
             }
-            socket.emit('join_as_player');
+            socket.emit('joinAsPlayer');
         };
 
         $scope.isPlayer = function() {
