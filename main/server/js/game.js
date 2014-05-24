@@ -136,6 +136,7 @@ function Gameplay() {
 function HexGame(gameBoardSize) {
 
     gameBoardSize = gameBoardSize || DEFAULT_GAME_BOARD_SIZE;
+    var playersConnected = {};
     var gameplay = new Gameplay();
     var gameBoard = new GameBoard(gameBoardSize);
     var winningPath;
@@ -244,6 +245,20 @@ function HexGame(gameBoardSize) {
 
     this.gameStatus = function() {
         return new GameStatus(gameplay.currentStatus(), gameBoard.lastPawn(), winningPath);
+    };
+
+    this.playerJoins = function() {
+        if (!this.allPlayersJoined()) {
+            var side = playersConnected['red'] ? 'blue' : 'red';
+
+            playersConnected[side] = true;
+
+            return side;
+        }
+    };
+
+    this.allPlayersJoined = function() {
+        return playersConnected['red'] && playersConnected['blue'];
     };
 }
 

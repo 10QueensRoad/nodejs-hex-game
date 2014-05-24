@@ -1,6 +1,5 @@
 var jwtSecret = 'hex game secret private key';
 var response = {};
-var playersConnected = {};
 var port = 3000;
 
 _ = require('./client/resources/js/lib/lodash-2.4.1');
@@ -26,7 +25,6 @@ app.use(favicon(__dirname + "/client/resources/images/favicon.ico"));
 
 var hexGame = new game.HexGame();
 var gameStatistics = new game.GameStatistics();
-var participants = new Participants();
 
 app.get('/', function (req, res) {
     res.sendfile(__dirname + '/client/views/index.html')
@@ -44,8 +42,6 @@ io.sockets.on('connection', function (socket) {
     }
 
     function resetGame() {
-        participants = new Participants();
-        playersConnected = _.transform(playersConnected, function(result, value, key) { result[key] = false; });
         hexGame = new game.HexGame(); //Reset game
         io.sockets.emit('gameStatus', hexGame.gameStatus());
     }
@@ -54,14 +50,12 @@ io.sockets.on('connection', function (socket) {
 
     socket.on('join_as_player', function () {
         console.log('join as player');
-        if (participants.allPlayersJoined()) {
+        if (hexGame.allPlayersJoined()) {
             socket.emit('error', { message: 'Game already in progress' });
         } else {
-            var player = participants.playerJoins();
-            side = player.side;
-            playersConnected[side] = true;
-            socket.emit('player_joined', _.extend({}, player, {gameStatus: hexGame.gameStatus()}));
-            if (playersConnected['red'] && playersConnected['blue']) {
+            side = hexGame.playerJoins();
+            socket.emit('player_joined', {side: side});
+            if (hexGame.allPlayersJoined()) {
                 try {
                     gameStatistics.gameStarted();
                     hexGame.start();
@@ -72,6 +66,7 @@ io.sockets.on('connection', function (socket) {
                 }
 		io.sockets.emit('gameStatus', hexGame.gameStatus());
             }
+            socket.emit('gameStatus', hexGame.gameStatus());
         }
     });
 
@@ -112,31 +107,3 @@ io.sockets.on('connection', function (socket) {
 });
 
 server.listen(port);
-
-function Participants() {
-
-    var players = [{
-        side: 'red',
-        token: null
-    }, {
-        side: 'blue',
-        token: null
-    }];
-
-    this.playerJoins = function() {
-        if (!this.allPlayersJoined()) {
-            var player = _.findWhere(players, {token: null});
-            var token = jwt.sign({side: player.side}, jwtSecret, { expiresInMinutes: 15 });
-            player.token = token;
-            return player;
-        }
-    };
-
-    this.allPlayersJoined = function() {
-        return !_.findWhere(players, {token: null});
-    };
-
-    this.players = function() {
-        return players;
-    };
-}

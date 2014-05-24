@@ -45,7 +45,6 @@ angular.module('hexGame.controllers', [])
         socket.on('player_joined', function (serverResponse) {
             $scope.$apply(function () {
                 $scope.side = serverResponse.side;
-                currentGameStatus = serverResponse.gameStatus.currentStatus;
                 addCells();
                 addBoardLetters();
                 // TODO: extract as a service?
