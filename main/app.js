@@ -123,10 +123,6 @@ function Participants() {
         token: null
     }];
 
-    this.viewerJoins = function() {
-        return jwt.sign({side: 'viewer'}, jwtSecret, { expiresInMinutes: 60 });
-    };
-
     this.playerJoins = function() {
         if (!this.allPlayersJoined()) {
             var player = _.findWhere(players, {token: null});
