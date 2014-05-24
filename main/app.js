@@ -44,16 +44,26 @@ io.sockets.on('connection', function (socket) {
     function resetGame() {
         side = undefined;
         hexGame = new game.HexGame(); //Reset game
+        io.sockets.in('game_room').emit('gameReset');
+        _.forEach(io.sockets.clients('game_room'), function (client) {
+            client.leave('game_room');
+        });
         io.sockets.emit('gameStatus', hexGame.gameStatus());
     }
 
     socket.emit('gameStatus', hexGame.gameStatus());
+
+    socket.on('joinAsViewer', function () {
+        socket.join('game_room');
+        socket.emit('gameStatus', hexGame.fullStatus());
+    });
 
     socket.on('joinAsPlayer', function () {
         console.log('join as player');
         if (hexGame.allPlayersJoined()) {
             socket.emit('error', { message: 'Game already in progress' });
         } else {
+            socket.join('game_room');
             side = hexGame.playerJoins();
             socket.emit('playerJoined', {side: side});
             if (hexGame.allPlayersJoined()) {
@@ -64,7 +74,7 @@ io.sockets.on('connection', function (socket) {
                     console.log(exception);
                     resetGame();
                 }
-		io.sockets.emit('gameStatus', hexGame.gameStatus());
+		io.sockets.in('game_room').emit('gameStatus', hexGame.gameStatus());
             }
         }
     });

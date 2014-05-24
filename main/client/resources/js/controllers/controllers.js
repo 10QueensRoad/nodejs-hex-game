@@ -23,8 +23,12 @@ angular.module('hexGame.controllers', [])
             $scope.$apply(function() {
                 if (!serverResponse.isError) {
                     $scope.hasError = false;
-                    addPawnToArray(angular.isDefined($scope.side) ? $scope.pawns : movesToDisplayWhenLoginAsViewer,
-                        serverResponse.pawn);
+                    if (serverResponse.pawns) {
+                        addPawns(serverResponse.pawns);
+                    } else {
+                        addPawnToArray(angular.isDefined($scope.side) ? $scope.pawns : movesToDisplayWhenLoginAsViewer,
+                                       serverResponse.pawn);
+                    }
                     addWinningPathToArray(
                         angular.isDefined($scope.side) ? $scope.winningPath : winningPathToDisplayWhenLoginAsViewer,
                         serverResponse.winningPath);
@@ -49,7 +53,9 @@ angular.module('hexGame.controllers', [])
                 addBoardLetters();
                 // TODO: extract as a service?
                 $window.onbeforeunload = function(e) {
-                    return 'Reloading this page will reset the game. Are you sure you want to reload this page?';
+                    if ($scope.isPlayer()) {
+                        return 'Reloading this page will reset the game. Are you sure you want to reload this page?';
+                    }
                 };
                 $scope.showGameScreen();
             });
@@ -59,6 +65,10 @@ angular.module('hexGame.controllers', [])
             $scope.hasError = true;
             //TODO get errorSide from serverResponse;
             $scope.showError();
+        });
+
+        socket.on('gameReset', function () {
+            $scope.side = undefined;
         });
         
         $scope.showError = function() { //TODO: remove?
@@ -92,6 +102,7 @@ angular.module('hexGame.controllers', [])
             addPawns(movesToDisplayWhenLoginAsViewer);
             addWinningPathToArray($scope.winningPath, winningPathToDisplayWhenLoginAsViewer);
             $scope.showGameScreen();
+            socket.emit('joinAsViewer');
         };
 
         $scope.loginAsPlayer = function() {
