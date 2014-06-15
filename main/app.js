@@ -55,6 +55,7 @@ io.sockets.on('connection', function (socket) {
     socket.on('joinAsViewer', function () {
         socket.join('game_room');
         socket.emit('gameStatus', hexGame.fullStatus());
+        socket.emit('gameStatistics', gameStatistics.stats());
     });
 
     socket.on('joinAsPlayer', function () {
@@ -98,15 +99,13 @@ io.sockets.on('connection', function (socket) {
             response.errorSide = side;
         }
         io.sockets.emit('gameStatus', gameStatus);
+        io.sockets.in('game_room').emit('gameStatistics', gameStatistics.stats());
     }).on('logout', function(logoutRequest) {
         if (isPlayer()) {
             console.log("notification: --------------------------- " + side, 'logged out, resetting game');
             resetGame();
         }
     }).on('disconnect', function(){
-        // Problem: Once a player "connects", they will continue to be connected even if they
-        // quit a game and become a viewer. We don't want this player to terminate a game in
-        // progress if this is the case.
         if (isPlayer()) {
             console.log("notification: --------------------------- " + side, " disconnected, resetting game");
             resetGame();

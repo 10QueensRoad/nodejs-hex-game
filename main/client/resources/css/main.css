@@ -173,12 +173,30 @@
     cursor: pointer;
 }
 
-.projectorView {
+.projectorView1 {
     position: absolute;
     bottom: 30px;
+    left: 10px;
 }
 
-.projectorView .qrCodeIntro {
+.projectorView2 {
+    position: absolute;
+    bottom: 30px;
+    right: 10px;
+}
+
+.statistics dt {
+    clear: left;
+    float: left;
+    padding-right: 1em;
+}
+
+.statistics dd {
+    clear: right;
+    float: left;
+}
+
+.projectorView1 .qrCodeIntro {
     font-size: 22px;
     text-align: center;
 }

@@ -14,6 +14,7 @@ angular.module('hexGame.controllers', [])
         $scope.pawns = [];
         $scope.boardTitle = [];
         $scope.winningPath = [];
+        $scope.statistics = {};
         var movesToDisplayWhenLoginAsViewer = [];
         var winningPathToDisplayWhenLoginAsViewer = [];
         var isProjectorView = angular.isDefined($location.search().projectorView);
@@ -32,7 +33,7 @@ angular.module('hexGame.controllers', [])
                     addWinningPathToArray(
                         angular.isDefined($scope.side) ? $scope.winningPath : winningPathToDisplayWhenLoginAsViewer,
                         serverResponse.winningPath);
-                    console.log('currentStatus is',JSON.stringify(serverResponse.currentStatus));
+
                     var previousStatus = currentGameStatus;
                     currentGameStatus = serverResponse.currentStatus;
                     if (previousStatus != 'waitingForPlayers'
@@ -43,6 +44,12 @@ angular.module('hexGame.controllers', [])
                     $scope.hasError = true;
                     errorSide = serverResponse.side;
                 }
+            });
+        });
+
+        socket.on('gameStatistics', function(statistics) {
+            $scope.$apply(function() {
+                $scope.statistics = statistics;
             });
         });
 
@@ -205,7 +212,6 @@ angular.module('hexGame.controllers', [])
         };
         var addWinningPathToArray = function(winninPathArray, winningPath) {
         	if (angular.isArray(winningPath) && winninPathArray.length == 0) {
-                console.log('winningPath is', JSON.stringify(winningPath));
                 winninPathArray.push.apply(winninPathArray, winningPath);
             }
         };

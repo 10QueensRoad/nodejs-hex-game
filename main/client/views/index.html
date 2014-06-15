@@ -162,33 +162,23 @@
 
     <div class="gameControls">
 
-    	<div class="projectorView" ng-show="isViewer() && isProjectorView()">
+    	<div class="projectorView1" ng-show="isViewer() && isProjectorView()">
             <div class="qrCodeIntro">
     		Scan this QR code<br />and join the fun!<br /><img src="resources/images/qrCode.png" />
             </div>
-            <!--
+        </div>
+        <div class="projectorView2" ng-show="isViewer() && isProjectorView()">
             <dl class="statistics">
-                <dt>Games started:</dt><dd>0</dd>
-            </dl>
-            <dl class="statistics">
-                <dt>Longest game:</dt><dd>0 pawns</dd>
-            </dl>
-            <dl class="statistics">
-                <dt>Shortest game:</dt><dd>0 pawns</dd>
-            </dl>
-            <dl class="statistics">
+                <dt>Games started:</dt><dd>{{statistics.gamesStarted}}</dd>
+                <dt>Longest game:</dt><dd>{{statistics.longestGame? statistics.longestGame + ' pawns' : ''}}</dd>
+                <dt>Shortest game:</dt><dd>{{statistics.shortestGame? statistics.shortestGame + ' pawns' : ''}}</dd>
                 <dt>Longest winning path:</dt><dd>0 pawns</dd>
-            </dl>
-            <dl class="statistics">
                 <dt>Shortest winning path:</dt><dd>0 pawns</dd>
+                <dt>Total pawns placed:</dt><dd>{{statistics.totalPawnsPlaced}} pawns</dd>
+                <div ng-repeat="(winner, winAmount) in statistics.wins">
+                    <dt>Wins for {{winner}}:</dt><dd>{{winAmount}}</dd>
+                </div>
             </dl>
-            <dl class="statistics">
-                <dt>Total pawns placed:</dt><dd>0 pawns</dd>
-            </dl>
-            <dl class="statistics">
-                <dt>Wins for {{stats.wins</dt><dd>0 pawns</dd>
-            </dl>
--->
     	</div>
     </div>
 </div>
